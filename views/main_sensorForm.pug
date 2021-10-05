@@ -1,0 +1,256 @@
+extends layout
+
+block content
+
+    //
+        Page for viewing and managing compost sensors.
+    //
+
+    h1= title
+    p This is where you can view the current sensor data as well as add and edit the characteristics of sensors.
+
+    //
+        If there are sensors in the database, list them here. Also includes a
+        column for the actions that can be used on that sensor.
+        If there are no sensors, shows a message.
+    //
+    if sensors
+        h3 Sensor list:
+        table(class="sensorTable")
+            tr(class="sensorTable")
+                th(class="sensorTable") Name
+                th(class="sensorTable") Description
+                th(class="sensorTable") Thingsboard ID
+                th(class="sensorTable") Actions
+            each row in sensors
+                tr(class="sensorTable")
+                        td(class="sensorTable") #{row.name}
+                        td(class="sensorTable") #{row.description}
+                        td(class="sensorTable") #{row.id}
+                        td(class="sensorTable")
+
+                            //
+                                At present, the current actions are to edit the
+                                sensor or delete it. Editing a sensor copies
+                                its data to the form below the lists and
+                                changes the text of the page to indicate this.
+                                Deleting a sensor uses a dedicated form so it
+                                can be sent to the right route.
+                            //
+                            button(value=row.id onclick='sensorEditButton(this)') Edit
+                            form(action='/deleteSensor' method='POST' onsubmit="return sensorDeleteButton()")
+                                input(name='id' id='deleteId' type='hidden' value=row.id)
+                                input(value='Delete', type='submit')
+
+        //
+            Shows the latest data that has been saved in the database for each
+            sensor. If there is no data, shows N/A for that sensor.
+            As the methane sensor used in the Substation33 device gives a
+            voltage rather than an actual PPM reading, it needs to be converted
+            here.
+        //
+        h3 Latest data for each sensor
+        table(class="sensorTable")
+            tr(class="sensorTable")
+                th(class="sensorTable") Sensor
+                th(class="sensorTable") Latest timestamp
+                th(class="sensorTable") Methane levels
+                th(class="sensorTable") Min methane levels in last 30 min
+                th(class="sensorTable") Max methane levels in last 30 min
+                th(class="sensorTable") Sensor temperature
+                th(class="sensorTable") External temperature
+                th(class="sensorTable") Humidity
+            each row in sensors
+                    tr(class="sensorTable")
+                        td(class="sensorTable") #{row.name}
+                        if row.timestamp
+                            td(class="sensorTable") #{row.timestamp}
+                            if (row.mv > 2)
+                                td(class="sensorTable") #{((row.mv-2)/5)*10000} ppm
+                            else
+                                td(class="sensorTable") 0 ppm
+                            if (row.mvmin > 2)
+                                td(class="sensorTable") #{((row.mvmin-2)/5)*10000} ppm
+                            else
+                                td(class="sensorTable") 0 ppm
+                            if (row.mvmax > 2)
+                                td(class="sensorTable") #{((row.mvmax-2)/5)*10000} ppm
+                            else
+                                td(class="sensorTable") 0 ppm
+                            td(class="sensorTable") #{row.st}°C
+                            td(class="sensorTable") #{row.et}°C
+                            td(class="sensorTable") #{row.h}%
+                        else
+                            td(class="sensorTable") N/A
+                            td(class="sensorTable") N/A
+                            td(class="sensorTable") N/A
+                            td(class="sensorTable") N/A
+                            td(class="sensorTable") N/A
+                            td(class="sensorTable") N/A
+                            td(class="sensorTable") N/A
+
+        //
+            Lists whether each sensor in the database is currently connected
+            to the Thingsboard websocket.
+            This does not update automatically - refreshing the page will get
+            the latest status.
+            There is another dedicated form here to allow the user to reset the
+            connections. This can be useful if one of the connections has
+            closed and reached the maximum number of retries.
+        //
+        h3 Current connection status of each sensor
+        ul
+            each row in sensors
+                li #{row.name}: #{row.connected}
+        form(action='/resetSensorConnections', method='POST')
+            table
+                tr
+                    td
+                        input(value='Reset sensor connections', type='submit')
+                    td
+
+    else
+        p There are currently no sensors in the database.
+
+    //
+        Form for adding a sensor, or editing an existing one.
+        This goes to the same route on the server on submission. Whether it is
+        an add or edit action is determined if the hidden original ID field has
+        a value. This also allows the ID to be changed if it was entered
+        incorrectly.
+    //
+    h3(id='formTitle') Add sensor
+    form(action='/setSensor', method='POST')
+        p(id='formSubtitle', style="display: none") -
+        table
+            tr
+                td
+                    label Thingsboard ID
+                td
+                    input(name='formId' id='formId')
+                    input(name='formOriginalId' id='formOriginalId' type='hidden')
+            tr
+                td
+                    label Name
+                td
+                    input(name='formName' id='formName')
+            tr
+                td
+                    label Description (optional)
+                td
+                    input(name='formDescription' id='formDescription')
+            tr
+
+                //
+                    Buttons for clearing and submittting the form.
+                //
+                td
+                    button(onclick='clearAddUpdateForm()' type='button') Clear
+                    input(value='Submit', type='submit')
+
+    p
+        a(href="/") Home
+
+    script.
+        // Script for the sensor page.
+
+        // Get the array of sensors that was sent as a variable when rendering
+        // the page.
+        var sensors = !{JSON.stringify(sensors)};
+
+        // Get the form's text as well as the inputs.
+        var $formTitle = document.getElementById('formTitle');
+        var $formSubtitle = document.getElementById('formSubtitle');
+        var $formOriginalId = document.getElementById('formOriginalId');
+        var $formId = document.getElementById('formId');
+        var $formName = document.getElementById('formName');
+        var $formDescription = document.getElementById('formDescription');
+
+        // Sets up the form for editing the sensor specified by the ID
+        // parameter.
+        function switchToUpdateForm(id) {
+            $formId.value = id;
+            $formOriginalId.value = id;
+            for (var row of sensors) {
+                if (row.id === id) {
+                    $formName.value = row.name;
+                    $formDescription.value = row.description;
+                    break;
+                }
+            }
+
+            // Change the title and show the subtitle.
+            $formTitle.textContent = "Edit sensor";
+            $formSubtitle.style = "display: inherit";
+            $formSubtitle.textContent = `Editing sensor ${id}`;
+        }
+
+        // When the user clicks on the clear form button, clear all form
+        // fields. This also sets the form back to add mode if it wasn't
+        // already.
+        function clearAddUpdateForm() {
+            $formId.value = "";
+            $formOriginalId.value = "";
+            $formName.value = "";
+            $formDescription.value = "";
+
+            // Change the title and hide the subtitle.
+            $formTitle.textContent = "Add sensor";
+            $formSubtitle.style = "display: none";
+            $formSubtitle.textContent = "-";
+        }
+
+        // When the user clicks on the button to edit a sensor, set up the form
+        // for editing.
+        function sensorEditButton(button) {
+            switchToUpdateForm(button.value);
+        }
+
+        // When the user clicks on the button to delete a sensor, give them a
+        // prompt to make sure they wanted to do it.
+        function sensorDeleteButton() {
+            var answer = confirm('Are you sure you want to delete this sensor? This will also delete all sensor data for that sensor.');
+            if (answer === true) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        // Make sure the form is populated correctly if there's already a value
+        // for the original ID.
+        window.onload = function() {
+            if ($formOriginalId.value !== "" && $formOriginalId.value !== undefined) {
+                switchToUpdateForm($formOriginalId.value);
+            } else {
+                clearAddUpdateForm();
+            }
+        }
+
+        // If there was an error message from the user's submission, show an
+        // alert.
+        var submitErrorMessage = "#{submitErrorMessage}";
+        if (submitErrorMessage) {
+            alert(submitErrorMessage);
+        }
+
+        // If there was a success message from the user's submission, show an
+        // alert.
+        var submitSuccessMessage = "#{submitSuccessMessage}";
+        if (submitSuccessMessage) {
+            alert(submitSuccessMessage);
+        }
+
+        // If there was an error message from the user's attempt to reset
+        // sensors, show an alert.
+        var resetErrorMessage = "#{resetErrorMessage}";
+        if (resetErrorMessage) {
+            alert(resetErrorMessage);
+        }
+
+        // If there was a success message from the user's attempt to reset
+        // sensors, show an alert.
+        var resetSuccessMessage = "#{resetSuccessMessage}";
+        if (resetSuccessMessage) {
+            alert(resetSuccessMessage);
+        }

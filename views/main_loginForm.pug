@@ -1,0 +1,40 @@
+extends layout
+
+block content
+
+    //
+        Page for logging into the mobile app server to manage it.
+    //
+
+    h1= title
+
+    //
+        Form that lets the user log in.
+    //
+    form(action='/login', method='POST')
+        table
+            tr
+                td
+                    label Username
+                td
+                    input(name='username', type='text')
+            tr
+                td
+                    label Password
+                td
+                    input(name='password', type='password')
+            tr
+                td
+                    input(value='Submit', type='submit')
+    p
+        a(href="/") Home
+
+    script.
+        // Script for the login page.
+
+        // If there was an error message from the user's login attempt, show
+        // an alert.
+        var submitErrorMessage = "#{submitErrorMessage}";
+        if (submitErrorMessage) {
+            alert(submitErrorMessage);
+        }

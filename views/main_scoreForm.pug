@@ -1,0 +1,130 @@
+extends layout
+
+block content
+
+    //
+        Page for viewing and managing house scores.
+    //
+
+    h1= title
+    p This is where you can adjust the scores of each house depending on how much compost their students have brought in.
+
+    //
+        Lists the houses and their current scores.
+    //
+    p The current house scores are:
+    ul
+        each row in data
+            li #{row.name} - #{row.score}
+
+    //
+        Form for changing the scores of a house.
+        Sets the score directly rather than adding or removing a certain amount.
+    //
+    p Please choose which house you want to adjust the score of, and the new score:
+    form(action="/setHouseScores", method="POST")
+        table
+            tr
+                td
+                    label House
+                td
+                    select(name="house")
+                        each row in data
+                            option(value=row.id) #{row.name}
+            tr
+                td
+                    label Score
+                td
+                    input(name="score", type="number", value="0")
+            tr
+                td
+                    input(value="Submit", type="submit")
+
+    //
+        We are also considering having the server add scores based upon data
+        from the Oliver loan system. Since we are unsure that an API is
+        available, and Oliver can export CSVs, this is included to parse them.
+    //
+    h3 CSV upload
+
+    //
+        Form for uploading a CSV to the server to be parsed. This is hidden if
+        one is uploaded and the results are on screen, but will reappear if the
+        parsed scores are cleared.
+    //
+    form(id="csvUploadForm", action="/parseCsv", method="POST", enctype="multipart/form-data", style=(csvScores !== null ? "display: none" : "display: inherit"))
+        p Alternatively, if you have a .CSV (Comma Separated Value) file exported from the Oliver system, you can select it with the Browse button below. After selecting it, use the Submit button to upload the file to the server to parse it.
+
+        p Any entries that involve a "YSSC Compost Bin" and have been returned will have points allocated to the borrower's house. You will have a chance to preview what each house will gain from reading the file before they are saved.
+        input(name="csv", type="file")
+        input(value="Submit", type="submit")
+
+    //
+        This form appears if some scores were successfully parsed from an
+        uploaded CSV.
+        It shows a list of the parsed scores so the user can confirm them, and
+        the user can either submit them to the database, or clear them to make
+        the original form appear again.
+    //
+    if csvScores !== null
+        div(id="csvScoresDiv")
+        p The scores parsed from the uploaded CSV file are as follows:
+        ul
+            each row, index in csvScores
+                li #{row.name} - #{row.score}
+        p Use the Submit button to change the scores in the database. Any values in the above list will be added to the existing scores.
+        P If you do not want to make these changes, use the Clear button instead.
+        form(id="csvScoresForm", action="/addToHouseScoresMultiple", method="POST")
+
+            //
+                This list of hidden fields will be used to send ids and the
+                corresponding scores to the database.
+            //
+            each row, index in csvScores
+                input(name=`id${index}`, id=`csvFormId${index}`, type="hidden", value=row.id)
+                input(name=`score${index}`, id=`csvFormScore${index}`, type="hidden", value=row.score)
+
+            //
+                Also have a hidden field for how many are in the list
+            //
+            input(name="numScores", id="csvFormNumScores", type="hidden", value=csvScores.length)
+            table
+                tr
+
+                    //
+                        This button will remove this form and make the original
+                        CSV form appear again.
+                    //
+                    td
+                        button(onclick="clearCsvScoresForm()", type="button") Clear
+                    td
+                        input(value="Submit", type="submit")
+    p
+        a(href="/") Home
+
+    script.
+        // Script for the score page.
+
+        var csvScores = !{JSON.stringify(csvScores)};
+        var $csvUploadForm = document.getElementById("csvUploadForm");
+        var $csvScoresForm = document.getElementById("csvScoresForm");
+        var $csvScoresDiv = document.getElementById("csvScoresDiv");
+
+        // If there was an error message from the user"s submission, show an
+        // alert.
+        var submitErrorMessage = "#{submitErrorMessage}";
+        if (submitErrorMessage) {
+            alert(submitErrorMessage);
+        }
+
+        // If there was a success message from the user"s submission, show an
+        // alert.
+        var submitSuccessMessage = "#{submitSuccessMessage}";
+        if (submitSuccessMessage) {
+            alert(submitSuccessMessage);
+        }
+
+        function clearCsvScoresForm() {
+            $csvScoresDiv.remove();
+            $csvUploadForm.style = "display: inherit";
+        }

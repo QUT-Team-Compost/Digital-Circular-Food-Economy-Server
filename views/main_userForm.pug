@@ -1,0 +1,231 @@
+extends layout
+
+block content
+
+    //
+        Page for viewing and managing users scores.
+    //
+
+    h1= title
+    p This is where you can manage the users that can access this server.
+
+    //
+        If there are user in the database, list them here. Also includes a
+        column for the actions that can be used on that user.
+        If there are no users, shows a message.
+        This should not happen and this page is inaccessible without being
+        logged in, but is here for completeness.
+    //
+    if users
+        h3 User list:
+        table(class="sensorTable")
+            tr(class="sensorTable")
+                th(class="sensorTable") ID
+                th(class="sensorTable") Username
+                th(class="sensorTable") Active
+                th(class="sensorTable") Role
+                th(class="sensorTable") Actions
+            each row in users
+                tr(class="sensorTable")
+                        td(class="sensorTable") #{row.id}
+                        td(class="sensorTable") #{row.username}
+                        td(class="sensorTable")
+                            if (row.active === 1)
+                                | Yes
+                            else
+                                | No
+                        td(class="sensorTable")
+                            if (row.role === "admin")
+                                | Administrator
+                            else
+                                | Regular user
+                        td(class="sensorTable")
+
+                            //
+                                At present, the current actions are to edit the
+                                user or delete it. Editing a user switches the
+                                form below to the edit version.
+                                Deleting a user uses a dedicated form so it can
+                                be sent to the right route.
+                            //
+                            button(value=row.id onclick="userEditButton(this)") Edit
+                            form(action="/deleteUser" method="POST" onsubmit="return userDeleteButton()")
+                                input(name="id" id="deleteId" type="hidden" value=row.id)
+                                input(value="Delete", type="submit")
+
+    else
+        p There are currently no users in the database.
+
+    //
+        Form for adding a user. This becomes hidden if the current user selects
+        to edit a user instead.
+    //
+    form(id="addForm", style="display: inherit", action="/addUser", method="POST")
+        h3 Add a user
+        table
+            tr
+                td
+                    label Username
+                td
+                    input(name="username" id="addFormUsername")
+            tr
+                td
+                    label Password
+                td
+                    input(name="password" id="addFormPassword", type="password")
+            tr
+                td
+                    label Administrator
+                td
+                    input(name="role" id="addFormRole", type="checkbox", value="admin")
+            tr
+                td
+                    label Starts active?
+                td
+                    input(name="active" id="addFormActive", type="checkbox", value="true")
+            tr
+
+                //
+                    Buttons for clearing and submittting the form.
+                //
+                td
+                    button(onclick="clearAddForm()" type="button") Clear
+                    input(value="Submit", type="submit")
+
+    //
+        Form for editing a user. This becomes hidden if the current user clicks
+        to clear it, and the above form is displayed again.
+    //
+    form(id="updateForm", style="display: none", action="/updateUser", method="POST")
+        h3 Modify a user
+        table
+            tr
+                td
+                    label ID
+                td
+                    input(name="id" id="updateFormId" readonly="readonly")
+            tr
+                td
+                    label Username
+                td
+                    input(name="username" id="updateFormUsername")
+            tr
+                td
+                    label Administrator
+                td
+                    input(name="role" id="updateFormRole", type="checkbox", value="admin")
+            tr
+                td
+                    label Active?
+                td
+                    input(name="active" id="updateFormActive", type="checkbox", value="true")
+            tr
+
+                //
+                    Buttons for clearing and submittting the form.
+                //
+                td
+                    button(onclick="clearUpdateForm()" type="button") Clear
+                    input(value="Submit", type="submit")
+
+    p
+        a(href="/") Home
+
+    script.
+        // Script for the user page.
+
+        // Get the array of user that was sent as a variable when rendering the
+        // page.
+        var users = !{JSON.stringify(users)};
+
+        // Get the form for adding users as well as its inputs.
+        var $addForm = document.getElementById("addForm");
+        var $addFormUsername = document.getElementById("addFormUsername");
+        var $addFormPassword = document.getElementById("addFormPassword");
+        var $addFormRole = document.getElementById("addFormRole");
+        var $addFormActive = document.getElementById("addFormActive");
+
+
+        // Get the form for editing users as well as its inputs.
+        var $updateForm = document.getElementById("updateForm");
+        var $updateFormUsername = document.getElementById("updateFormUsername");
+        var $updateFormRole = document.getElementById("updateFormRole");
+        var $updateFormActive = document.getElementById("updateFormActive");
+        var $updateFormId = document.getElementById("updateFormId");
+
+        // When the user clicks on the button to delete a user, give them a
+        // prompt to make sure they wanted to do it.
+        function userDeleteButton() {
+            var answer = confirm("Are you sure you want to delete this user?");
+            if (answer === true) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        // When the user clicks the button to clear the add form, clears all
+        // fields.
+        function clearAddForm() {
+            $addFormUsername.value = "";
+            $addFormPassword.value = "";
+            $addFormRole.checked = false;
+            $addFormActive.checked = false;
+        }
+
+        // When the user clicks on the button to edit a user, set up the form
+        // for editing.
+        function userEditButton(button) {
+            switchToUpdateForm(button.value);
+        }
+
+        // Hides the add form, shows the edit form, and sets it up for editing
+        // the user specified by the ID parameter.
+        function switchToUpdateForm(id) {
+            $addForm.style = "display: none";
+            $updateForm.style = "display: inherit";
+            $updateFormId.value = id;
+            for (var row of users) {
+                if (row.id === parseInt(id)) {
+                    $updateFormUsername.value = row.username;
+                    $updateFormRole.checked = row.role === "admin" ? true : false;
+                    $updateFormActive.checked = row.active === 1 ?  true : false;
+                    break;
+                }
+            }
+        }
+
+        // When the user clicks on the clear form button for the edit form,
+        // clear all its fields and hide it, showing the add form again.
+        function clearUpdateForm() {
+            $updateForm.style = "display: none";
+            $addForm.style = "display: inherit";
+            $updateFormUsername.value = "";
+            $updateFormRole.checked = false;
+            $updateFormActive.checked = false;
+            $updateFormId.value = "";
+        }
+
+        // Make sure edit form is shown and populated correctly if there's
+        // already a value for an ID in the form.
+        window.onload = function() {
+            if ($updateFormId.value !== "" && $updateFormId.value !== undefined) {
+                switchToUpdateForm($updateFormId.value);
+            } else {
+                clearUpdateForm();
+            }
+        }
+
+        // If there was an error message from the user's submission, show an
+        // alert.
+        var submitErrorMessage = "#{submitErrorMessage}";
+        if (submitErrorMessage) {
+            alert(submitErrorMessage);
+        }
+
+        // If there was a success message from the user's submission, show an
+        // alert.
+        var submitSuccessMessage = "#{submitSuccessMessage}";
+        if (submitSuccessMessage) {
+            alert(submitSuccessMessage);
+        }

@@ -1,0 +1,37 @@
+extends layout
+
+block content
+
+    //
+        Landing page for the mobile app server. Shows a log in link if the user is
+        not logged in, otherwise gives a list of links to the various page options.
+    //
+
+    h1= title
+    p These web pages will allow you to control some of the aspects of the mobile app companion for the compost and circular economy project at [insert your school here] - Example Compost app.
+    if loggedIn
+        p
+            a(href="scoreForm") House scores
+        p
+            a(href="sensorForm") Compost sensors
+        p
+            a(href="userForm") Users
+        p
+            a(href="passwordForm") Change your password
+        p
+            a(href="logout") Log out
+    else
+        p
+            a(href="loginForm") Log in
+    //
+        If there are any issues with the user's authentication, show them here.
+    //
+
+    script.
+        // Script for the home page.
+
+        // If there was an error message about the user's session, show an alert.
+        var loginErrorMessage = "#{loginErrorMessage}";
+        if (loginErrorMessage) {
+            alert(loginErrorMessage);
+        }

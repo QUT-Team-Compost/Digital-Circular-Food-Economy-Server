@@ -1,0 +1,9 @@
+doctype html
+html
+  head
+    title= title
+    link(rel='stylesheet', href='/stylesheets/style.css')
+  body
+    if username
+        p Logged in as #{username}
+    block content

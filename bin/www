@@ -1,0 +1,149 @@
+#!/usr/bin/env node
+
+// Modified version of the default www file created by Express, used to set up
+// the server.
+
+/**
+ * Module dependencies.
+ */
+
+var app = require('../app');
+var debug = require('debug')('app-server:server');
+var http = require('http');
+var https = require('https');
+var fs = require('fs');
+var service = require ("os-service");
+
+// Check the supplied argument.
+// If it is "--add", it adds the server as a service.
+if (process.argv[2] == "--add") {
+    service.add ("Example_Mobile_App_Server", {programArgs: ["--run"], displayName: "Example Mobile App Server (node.js)"}, function(error){ 
+       if (error)
+          console.trace(error);
+    });
+    
+// If it is "--remove", it removes the server as a service if it exists.
+} else if (process.argv[2] == "--remove") {
+    service.remove ("Example_Mobile_App_Server", function(error){ 
+       if (error)
+          console.trace(error);
+    });
+    
+// If it is "--run", starts the server. The service uses this command as well.
+} else if (process.argv[2] == "--run") {
+    service.run (function () {
+        service.stop (0);
+    });
+    
+    // Ensure that the right working dictionary is set, as running as a service
+    // may mean it is set to elsewhere.
+    process.chdir(__dirname.substring(0,__dirname.length-3));
+
+    /**
+     * Get port from environment and store in Express.
+     */
+
+    var port = normalizePort(process.env.PORT || '3000');
+    app.set('port', port);
+
+    /**
+     * Create HTTP server.
+     */
+
+    // Check if the configuration specifies to use HTTPS.
+    var useHttps = process.env.USE_HTTPS ? process.env.USE_HTTPS.toLowerCase() === "true" : false;
+    var keyLocation = process.env.HTTPS_KEY_LOCATION || 'key.pem';
+    var certLocation = process.env.HTTPS_CERT_LOCATION || 'cert.pem';
+    var server;
+
+    // If so, get the certificates from the specified location and start an
+    // HTTPS server.
+    if (useHttps) {
+        var options = {
+          key: fs.readFileSync(keyLocation),
+          cert: fs.readFileSync(certLocation)
+        };
+        server = https.createServer(options, app);
+
+    // Otherwise, start a regular server.
+    } else {
+        server = http.createServer(app);
+    }
+
+    /**
+     * Listen on provided port, on all network interfaces.
+     */
+
+    server.listen(port);
+    server.on('error', onError);
+    server.on('listening', onListening);
+
+    /**
+     * Normalize a port into a number, string, or false.
+     */
+
+    function normalizePort(val) {
+      var port = parseInt(val, 10);
+
+      if (isNaN(port)) {
+        // named pipe
+        return val;
+      }
+
+      if (port >= 0) {
+        // port number
+        return port;
+      }
+
+      return false;
+    }
+
+    /**
+     * Event listener for HTTP server "error" event.
+     */
+
+    function onError(error) {
+      if (error.syscall !== 'listen') {
+        throw error;
+      }
+
+      var bind = typeof port === 'string'
+        ? 'Pipe ' + port
+        : 'Port ' + port;
+
+      // handle specific listen errors with friendly messages
+      switch (error.code) {
+        case 'EACCES':
+          console.error(bind + ' requires elevated privileges');
+          process.exit(1);
+          break;
+        case 'EADDRINUSE':
+          console.error(bind + ' is already in use');
+          process.exit(1);
+          break;
+        default:
+          throw error;
+      }
+    }
+
+    /**
+     * Event listener for HTTP server "listening" event.
+     */
+
+    function onListening() {
+      var addr = server.address();
+      var bind = typeof addr === 'string'
+        ? 'pipe ' + addr
+        : 'port ' + addr.port;
+      debug('Listening on ' + bind);
+      console.log('Server listening on port %s', server.address().port);
+    }
+
+// If no argument or an unrecognised one is used, show the possible arguments
+// and then terminate the process.
+} else {
+    console.log ("usage: node www --add - adds this server application as a service");
+	console.log ("       node www --remove - removes this server application if it is already a service");
+	console.log ("       node www --run - runs this server application");
+	process.exit (-1);
+}
