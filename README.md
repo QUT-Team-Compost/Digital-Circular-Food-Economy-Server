@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This is a template of a simple Node.js server that can be used as the backend of the mobile app template that can be found (here)[]. This server is intended to store house scores for participating in the compost scheme, as well as connect to sensors on the Thingsboard platform. If these features are not included, the server is not necessary (and it can be modified for different purposes). The mobile app will run without contact with a server; this is only necessary for the aforementioned features.
+This is a template of a simple Node.js server that can be used as the backend of the mobile app template that can be found [here](https://github.com/QUT-Team-Compost/Digital-Circular-Food-Economy-App). This server is intended to store house scores for participating in the compost scheme, as well as connect to sensors on the Thingsboard platform. If these features are not included, the server is not necessary (and it can be modified for different purposes). The mobile app will run without contact with a server; this is only necessary for the aforementioned features.
 
 The intention of the mobile app and server is to act as a companion for a circular food economy scheme that has been set up at primary or secondary school (Australian definitions). It is based upon the mobile app that is being used for the scheme at Yarrabilba State Secondary College, which has been released on both Android and iOS.
 
@@ -129,8 +129,8 @@ If you wish to install manually on a Linux system (or encounter problems running
     - Debian-based distributions: `apt-get install -y mysql-server`
     - Fedora-based distributions: `yum install -y mysql-server`
     - Once it is installed, start up the server process using `systemctl start mysqld`, and to have the process start on every boot, run the command `systemctl enable mysqld`.
-1. Install the node packages required to run the server, using `npm install` in the server's root directory.
-1. Import the `database.sql` script in the SQL folder, using `mysql < ./SQL/database.sql` in the server's root directory, in order to set up the database with the required tables and data.
+1. Install the node packages required to run the server, using `npm ci` (or `npm install` if package-lock.json is not present) in the server's root directory.
+1. Import the "database.sql" script in the SQL folder, using `mysql < ./SQL/database.sql` in the server's root directory, in order to set up the database with the required tables and data.
     - This includes a single user for the website, "yssc_app_admin", with the password "compost2021".
     - Note: This file should be modified in order to give the two database users a different password. The password for the website login can be changed after logging into the website.
 
@@ -138,8 +138,8 @@ To install on a Windows system, the process is as follows:
 1. Download and install Node.js from https://nodejs.org/en/download. As this application has been tested using Node 16.2.0, it is recommended to use the latest release, rather than the LTS release.
 1. Download and install MySQL Server from https://dev.mysql.com/downloads. If you prefer to use MariaDB over MySQL, it should be able to be substituted in without issues, and can be downloaded from https://downloads.mariadb.org/mariadb.cation.
     - The installation should give you an option to start the MySQL/MariaDB server as a service when booting; make sure to select this option, unless you want to manage when the server starts yourself.
-1. In a Command Prompt window, install the node packages required to run the server, using `npm install` in the server's root directory.
-1. In a Command Prompt window, import the `database.sql` script in the SQL folder, using `mysql -u root -p < ./SQL/database.sql` in the server's root directory, in order to set up the database with the required tables and data (MySQL/MariaDB's bin folder should be on your PATH). You will be prompted to enter the root password.
+1. In a Command Prompt window, install the node packages required to run the server, using `npm ci` (or `npm install` if package-lock.json is not present) in the server's root directory.
+1. In a Command Prompt window, import the "database.sql" script in the SQL folder, using `mysql -u root -p < ./SQL/database.sql` in the server's root directory, in order to set up the database with the required tables and data (MySQL/MariaDB's bin folder should be on your PATH). You will be prompted to enter the root password.
     - Alternatively, if you installed MySQL/MariaDB Workbench, you can import the database using that.
     - This includes a single user for the website, "yssc_app_admin", with the password "compost2021".
     - Note: This file should be modified in order to give the two database users a different password. The password for the website login can be changed after logging into the website.
@@ -178,12 +178,30 @@ l. To stop the service, select "Stop".
 
 For Linux:
 1. Open a Terminal window with root privileges.
-1. Depending on your system, the service can be started with one of the following commands:
-    - `service YSSC_Mobile_App_Server start`
-    - `systemctl start YSSC_Mobile_App_Server`
-1. Depending on your system, the service can be stopped with one of the following commands:
-    - `service YSSC_Mobile_App_Server stop`
-    - `systemctl stop YSSC_Mobile_App_Server`
+1. Depending on your system configuration, the service can be started with one of the following commands:
+    - `service Example_Mobile_App_Server start`
+    - `systemctl start Example_Mobile_App_Server`
+1. The service can also be stopped using the corresponding command below:
+    - `service Example_Mobile_App_Server stop`
+    - `systemctl stop Example_Mobile_App_Server`
+    
+If the package cannot create a service on Linux, follow the instructions below to create it manually (instructions for Windows may come at a later date):
+1. Create a Example_Mobile_App_Server.service file in the /etc/systemd/system folder like the one below, replacing "/path" with the path to the server's root directory. For example, if you have the server in "/opt/Example_Mobile_App_Server", that would replace "/path". This is set to automatically attempt to restart the service if it fails.
+```
+[Unit]
+Description=Example Mobile App Server (node.js)
+[Service]
+ExecStart=node /path/bin/www --run
+Restart=always
+User=nobody
+Group=nogroup #Use 'nobody' if on Red Hat or Fedora
+Environment=PATH=/usr/bin:/usr/local/bin
+Environment=NODE_ENV=production
+WorkingDirectory=/path
+[Install]
+WantedBy=multi-user.target
+```
+1. After the file is created, start the service with the command `service Example_Mobile_App_Server start` or `systemctl start Example_Mobile_App_Server` depending on your system configuration. You can also run `systemctl enable Example_Mobile_App_Server` to have the server start on boot.
     
 ## License and copyright
 

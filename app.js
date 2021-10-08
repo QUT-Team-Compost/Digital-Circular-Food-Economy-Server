@@ -14,9 +14,6 @@ var app = express();
 // Load the main router.
 var mainRouter = require('./routes/main');
 
-// Load the websocket functions.
-var websocket = require('./websocket.js');
-
 // Load the environment configuration.
 const config = require('./utils/environment.js');
 
@@ -58,10 +55,6 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
-
-// Begin initialising the websockets for each Thingsboard device in the
-// database.
-websocket.initAll();
 
 // Export this file as a module
 module.exports = app;

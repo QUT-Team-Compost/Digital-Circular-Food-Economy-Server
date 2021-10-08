@@ -5,10 +5,7 @@ yum install -y nodejs
 yum install -y mysql-server
 systemctl start mysqld
 systemctl enable mysqld
-#yum install -y redis
-#systemctl start redis
-#systemctl enable redis
-yum install gcc-c++
-yum install make
-npm install
+yum install -y gcc-c++
+yum install -y make
+npm ci
 mysql < ./SQL/database.sql

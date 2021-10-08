@@ -21,20 +21,20 @@ if (process.argv[2] == "--add") {
        if (error)
           console.trace(error);
     });
-    
+
 // If it is "--remove", it removes the server as a service if it exists.
 } else if (process.argv[2] == "--remove") {
     service.remove ("Example_Mobile_App_Server", function(error){ 
        if (error)
           console.trace(error);
     });
-    
+
 // If it is "--run", starts the server. The service uses this command as well.
 } else if (process.argv[2] == "--run") {
     service.run (function () {
         service.stop (0);
     });
-    
+
     // Ensure that the right working dictionary is set, as running as a service
     // may mean it is set to elsewhere.
     process.chdir(__dirname.substring(0,__dirname.length-3));
@@ -138,6 +138,13 @@ if (process.argv[2] == "--add") {
       debug('Listening on ' + bind);
       console.log('Server listening on port %s', server.address().port);
     }
+
+    // Load the websocket functions.
+    var websocket = require('../websocket.js');
+
+    // Begin initialising the websockets for each Thingsboard device in the
+    // database.
+    websocket.initAll();
 
 // If no argument or an unrecognised one is used, show the possible arguments
 // and then terminate the process.
