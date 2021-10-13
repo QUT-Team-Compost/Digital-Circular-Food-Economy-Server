@@ -21,7 +21,7 @@ const variables = {
 if (env.JAWSDB_DATABASE) {
     variables.database_user_staff =     env.JAWSDB_USERNAME;
     variables.database_user_mobile =    env.JAWSDB_USERNAME;
-    variables.database_pass_staffe =    env.JAWSDB_PASSWORD;
+    variables.database_pass_staff =     env.JAWSDB_PASSWORD;
     variables.database_pass_mobile =    env.JAWSDB_PASSWORD;
     variables.database_port =           undefined;
     variables.database_name =           env.JAWSDB_DATABASE;

@@ -186,7 +186,7 @@ For Linux:
     - `systemctl stop Example_Mobile_App_Server`
     
 If the package cannot create a service on Linux, follow the instructions below to create it manually (instructions for Windows may come at a later date):
-1. Create a Example_Mobile_App_Server.service file in the /etc/systemd/system folder like the one below, replacing "/path" with the path to the server's root directory. For example, if you have the server in "/opt/Example_Mobile_App_Server", that would replace "/path". This is set to automatically attempt to restart the service if it fails.
+1. Create a Example_Mobile_App_Server.service file in the /etc/systemd/system folder. It should have similar contents to below, replacing "/path" with the path to the server's root directory. For example, if you have the server in "/home/admin/Example_Mobile_App_Server", that would replace "/path". "Restart=always" indicates that the service will attempt to restart if it closes for any reason.
 ```
 [Unit]
 Description=Example Mobile App Server (node.js)
