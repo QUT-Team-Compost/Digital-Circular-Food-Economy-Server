@@ -1486,6 +1486,52 @@ router.post("/addToHouseScoresMultiple", db, authorize, function(req, res, next)
     }
 })
 
+/** Resets a user's password.
+    Creates a random string to use as the new password, hashes it and stores it
+    in the database, and sends the random string to the user.
+    The required details should be sent as part of the request body.
+    */
+router.post("/resetUserPassword", db, authorize, adminOnly, function(req, res, next) {
+    dprint("(main.js - route /resetUserPassword) Attempting to reset a user's password.");
+
+    // Get the required fields from the client request.
+    var id = req.body.id;
+
+    // Check that the ID was supplied.
+    if (id === "" || id === undefined) {
+        var message = "Please specify the user's ID that you wish to reset the password for.";
+        req.session.submitErrorMessage = message;
+        res.redirect('userForm');
+        return;
+    }
+
+    // Make the ID an int since that is what it is in the database.
+    id = parseInt(id);
+    
+    // Generate a password of random characters, as well as a hash.
+    // Based from http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript
+    // The random password will be ten characters.
+    var password = Math.random().toString(36).substring(2, 7) + Math.random().toString(36).substring(2, 7);
+    var hash = bcrypt.hashSync(password, SALT_ROUNDS);
+
+    // Update the database with the new password hash.
+    req.db.from("users").where({ id: id }).update({ password: hash })
+
+        // Confirm the successful update.
+        .then(() => {
+            var message = `Reset user ${id}'s password succsesfully. The new password is ${password}. Please inform the user of what their password is, and that they should change it to something different when they log on.`;
+            req.session.submitSuccessMessage = message;
+            res.redirect('userForm');
+        })
+
+        // If there's an error during the database call, send it to the client.
+        .catch((err) => {
+            var message = "An error occured while trying to delete a user: " + err.message;
+            req.session.submitErrorMessage = message;
+            res.redirect('userForm');
+        });
+});
+
 // ------ Routes for mobile only ------
 
 /** Checks if the current token is valid and therefore the user is still logged in.

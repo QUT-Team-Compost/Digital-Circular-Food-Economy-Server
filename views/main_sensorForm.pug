@@ -37,10 +37,14 @@ block content
                                 Deleting a sensor uses a dedicated form so it
                                 can be sent to the right route.
                             //
-                            button(value=row.id onclick='sensorEditButton(this)') Edit
-                            form(action='/deleteSensor' method='POST' onsubmit="return sensorDeleteButton()")
-                                input(name='id' id='deleteId' type='hidden' value=row.id)
-                                input(value='Delete', type='submit')
+                            table
+                                tr
+                                    td
+                                        button(value=row.id onclick='sensorEditButton(this)') Edit
+                                    td
+                                        form(action='/deleteSensor' method='POST' onsubmit="return sensorDeleteButton()")
+                                            input(name='id' id='deleteId' type='hidden' value=row.id)
+                                            input(value='Delete', type='submit')
 
         //
             Shows the latest data that has been saved in the database for each

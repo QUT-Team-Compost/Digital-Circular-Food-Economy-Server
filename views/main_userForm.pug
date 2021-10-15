@@ -43,15 +43,24 @@ block content
 
                             //
                                 At present, the current actions are to edit the
-                                user or delete it. Editing a user switches the
-                                form below to the edit version.
-                                Deleting a user uses a dedicated form so it can
-                                be sent to the right route.
+                                user, reset their password or delete them.
+                                Editing a user switches the form below to the
+                                edit version.
+                                The latter two functions use a dedicated form
+                                so it can be sent to the right route.
                             //
-                            button(value=row.id onclick="userEditButton(this)") Edit
-                            form(action="/deleteUser" method="POST" onsubmit="return userDeleteButton()")
-                                input(name="id" id="deleteId" type="hidden" value=row.id)
-                                input(value="Delete", type="submit")
+                            table
+                                tr
+                                    td
+                                        button(value=row.id onclick="userEditButton(this)") Edit
+                                    td
+                                        form(action="/resetUserPassword" method="POST" onsubmit="return userResetPasswordButton()")
+                                            input(name="id" id="resetId" type="hidden" value=row.id)
+                                            input(value="Reset password", type="submit")
+                                    td
+                                        form(action="/deleteUser" method="POST" onsubmit="return userDeleteButton()")
+                                            input(name="id" id="deleteId" type="hidden" value=row.id)
+                                            input(value="Delete", type="submit")
 
     else
         p There are currently no users in the database.
@@ -145,7 +154,6 @@ block content
         var $addFormRole = document.getElementById("addFormRole");
         var $addFormActive = document.getElementById("addFormActive");
 
-
         // Get the form for editing users as well as its inputs.
         var $updateForm = document.getElementById("updateForm");
         var $updateFormUsername = document.getElementById("updateFormUsername");
@@ -228,4 +236,15 @@ block content
         var submitSuccessMessage = "#{submitSuccessMessage}";
         if (submitSuccessMessage) {
             alert(submitSuccessMessage);
+        }
+
+        // When the user clicks on the button to delete a user, give them a
+        // prompt to make sure they wanted to do it.
+        function userResetPasswordButton() {
+            var answer = confirm("Are you sure you want to reset this user's password? Doing so will change it to a random string of characters.");
+            if (answer === true) {
+                return true;
+            } else {
+                return false;
+            }
         }
