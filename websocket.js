@@ -145,10 +145,8 @@ function connectWebsocket(token, device, numRetries) {
                             mv: mv,
                             mvmin: mvmin,
                             mvmax: mvmax,
-                            compensated_sensor_reading: compensated_sensor_reading,
                             st: st,
                             et: et,
-                            t: t,
                             h: h,
                             v: v,
                             s: s
