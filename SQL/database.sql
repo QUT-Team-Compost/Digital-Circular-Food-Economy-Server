@@ -114,13 +114,13 @@ CREATE TABLE `sensor_data` (
   `mv` decimal(4,3) NOT NULL,
   `mvmin` decimal(4,3) NOT NULL,
   `mvmax` decimal(4,3) NOT NULL,
-  `compensated_sensor_reading` decimal(15,14) NOT NULL,
+  `compensated_sensor_reading` decimal(15,14) DEFAULT NULL,
   `st` decimal(5,2) NOT NULL,
   `et` decimal(5,2) NOT NULL,
-  `t` decimal(4,1) NOT NULL,
+  `t` decimal(4,1) DEFAULT NULL,
   `h` decimal(4,1) NOT NULL,
-  `v` decimal(4,3) NOT NULL,
-  `s` decimal(4,3) NOT NULL,
+  `v` decimal(4,3) DEFAULT NULL,
+  `s` decimal(4,3) DEFAULT NULL,
   PRIMARY KEY (`sensor_id`,`timestamp`),
   CONSTRAINT `fk_sensor_id` FOREIGN KEY (`sensor_id`) REFERENCES `sensors` (`id`) ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

@@ -88,20 +88,37 @@ function connectWebsocket(token, device, numRetries) {
         } else if (response.data === undefined || response.data === null) {
             dprint("No data in websocket message.");
             
-        // If the response data contains all the required data points, we
+        // If the response data contains all the required data properties, we
         // will assume it is a new set of telemetry data.
-        } else if (response.data.compensated_sensor_reading &&
-                    response.data.mv &&
+        // The expected data is as follows:
+        //     mv: Voltage from methane sensor;
+        //     mvmin: Minimum voltage from methane sensor in last interval;
+        //     mvmax: Maximum voltage from methane sensor in last interval;
+        //     st: Temperature from the location of the methane sensor;
+        //     et: Temperature from outside of the sensor;
+        //     h: Humidity;
+        //     v: Current battery voltage (currently unused in app); and
+        //     s: Voltage charge from solar panel (currently unused in app).
+        // There are also two other properties that can be included but are
+        // not saved, because they are not reliable or unknown:
+        //     compensated_sensor_reading: Eventually will measure something
+        //     that takes into account humidity and temperature; and
+        //     t: Currently unknown.
+        } else if (response.data.mv &&
                     response.data.mvmin &&
                     response.data.mvmax &&
                     response.data.st &&
                     response.data.et &&
-                    response.data.t &&
                     response.data.h &&
                     response.data.v &&
                     response.data.s) {
-            // We also take the timestamp from the compenstated sensor reading.
-            var timestamp = new Date(response.data.compensated_sensor_reading[0][0]);
+
+            // Each property is actually made up of an array containing another
+            // array with two elements: The timestamp and the actual value.
+            // While the has a separate timestamp property, this value is not
+            // accurate to the actual measurement. Therefore, the timestamp
+            // from one of the properties is used - in this case, mv.
+            var timestamp = new Date(response.data.mv[0][0]);
             
             // Check if we do not already have an entry for this device at
             // this time first.
@@ -117,10 +134,8 @@ function connectWebsocket(token, device, numRetries) {
                         var mv = response.data.mv[0][1];
                         var mvmin = response.data.mvmin[0][1];
                         var mvmax = response.data.mvmax[0][1];
-                        var compensated_sensor_reading = response.data.compensated_sensor_reading[0][1];
                         var st = response.data.st[0][1];
                         var et = response.data.et[0][1];
-                        var t = response.data.t[0][1];
                         var h = response.data.h[0][1];
                         var v = response.data.v[0][1];
                         var s = response.data.s[0][1];

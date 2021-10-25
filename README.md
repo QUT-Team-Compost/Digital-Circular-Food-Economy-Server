@@ -6,7 +6,9 @@ This is a template of a simple Node.js server that can be used as the backend of
 
 The intention of the mobile app and server is to act as a companion for a circular food economy scheme that has been set up at primary or secondary school (Australian definitions). It is based upon the mobile app that is being used for the scheme at Yarrabilba State Secondary College, which has been released on both Android and iOS.
 
-It also includes a web interface that allows a staff member to log in and alter the house scores.  The administrator can additionally manage the sensor connections and the users that have access.
+It also includes a web interface that allows a staff member to log in and alter the house scores.  The administrator can additionally manage the sensor connections, and all user accounts that can access the server pages - including whether they are regular or administrator accounts - and reset passwords.
+
+More details on the sensors and how they're used with the server can be found under the Sensors section.
 
 ## Included source code
 
@@ -50,13 +52,13 @@ Table definitions:
     - mv: (decimal, required) The voltage from the methane sensor. The actual value of methane in PPM is `(mv - 2 / 5) * 1000`.
     - mvmin: (decimal, required) The minimum voltage from the methane sensor since the last reading.
     - mvmax: (decimal, required) The maximum voltage from the methane sensor since the last reading.
-    - compensated_sensor_reading: (decimal, required) Not known and unused - this could be removed.
+    - compensated_sensor_reading: (decimal) Intended in future to measure something after taking humidity and temperature into account. Is currently not used and could be removed.
     - st: (decimal, required) The temperature at the probe of the methane sensor itself.
     - et: (decimal, required) The temperature outside the sensor's enclosure.
-    - t: (decimal, required) Not known and unused - this could be removed.
+    - t: (decimal) Currently not known and unused. This could be removed.
     - h: (decimal, required) The humidity of the air oustide of the sensor (from the same location as the external temperature probe).
-    - v: (decimal, required) The voltage of the sensor's battery. This is unused and could be removed.
-    - s: (decimal, required) The voltage from the solar panels. This is unused and could be removed.
+    - v: (decimal) The voltage of the sensor's battery. This is unused by the mobile app and could be removed.
+    - s: (decimal) The voltage from the solar panels. This is unused by the mobile app and could be removed.
 - sensors: Identifying data for the Thingsboard sensors that this server connects to.
     - id: (varchar, required, primary key) The Thingsboard ID for the sensor. This is used to connect to it via the Thingsboard API.
     - name: (varchar, required) An identifying name for the sensor.
@@ -202,6 +204,25 @@ WorkingDirectory=/path
 WantedBy=multi-user.target
 ```
 1. After the file is created, start the service with the command `service Example_Mobile_App_Server start` or `systemctl start Example_Mobile_App_Server` depending on your system configuration. You can also run `systemctl enable Example_Mobile_App_Server` to have the server start on boot.
+
+## Sensors
+
+This server is designed to work with a custom designed sensor that has been developed by [Substation33](https://substation33.com.au/). This sensor is placed in a compost heap and returns readings on the humidity, temperature in the sensor and in the compost, and the current methane levels, which allows the compost conditions to be monitored.
+
+The sensor transmits data via mobile Internet to [Thingsboard](https://thingsboard.io/) at a certain interval, which consists of the following known attributes:
+- mv: The voltage from the methane sensor. The actual value of methane in PPM is `(mv - 2 / 5) * 1000`.
+- mvmin: The minimum voltage from the methane sensor since the last reading.
+- mvmax: The maximum voltage from the methane sensor since the last reading.
+- st: The temperature at the probe of the methane sensor itself.
+- et: The temperature outside the sensor's enclosure.
+- h: The humidity of the air oustide of the sensor (from the same location as the external temperature probe).
+- v: The voltage of the sensor's battery.
+- s: The voltage from the solar panels.
+There is also a timestamp associated with each data transmission from the sensor, represented as a Unix Epoch.
+
+Thingsboard provides an [API](https://thingsboard.io/docs/api/) for connecting to any devices that send data to their servers. This server communciates through the Thingsboard API, first to receive authentication credentials (a username and password belonging to an account that the sensor is associated with is required) and then to connect to a websocket associated with the sensor itself. When this server receives a message from the websocket connection, and verifies that it contains data that includes all of the above attributes, it inserts it into a new row in the database.
+
+Currently, this server does not automatically get the sensor's IDs from Thingsboard. Instead, the administrator must have it on hand (by, for example, getting it from Substation33 or whoever manufactured the sensor) or log into the Thingsboard control panel to retrieve it. They can then go to the sensors page on the server and use the form to add the sensor to the database. If the ID is valid, this server should then start storing data from the sensor.
     
 ## License and copyright
 
