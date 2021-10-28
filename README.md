@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This is a template of a simple Node.js server that can be used as the backend of the mobile app template that can be found [here](https://github.com/QUT-Team-Compost/Digital-Circular-Food-Economy-App). This server is intended to store house scores for participating in the compost scheme, as well as connect to sensors on the Thingsboard platform. If these features are not included, the server is not necessary (and it can be modified for different purposes). The mobile app will run without contact with a server; this is only necessary for the aforementioned features.
+This is a template of a simple Node.js server that can be used as the backend of the mobile app template that can be found [here](https://github.com/QUT-Team-Compost/Digital-Circular-Food-Economy-App). This server is intended to store house scores for participating in the compost scheme, as well as connect to sensors on the ThingsBoard platform. If these features are not included, the server is not necessary (and it can be modified for different purposes). The mobile app will run without contact with a server; this is only necessary for the aforementioned features.
 
 The intention of the mobile app and server is to act as a companion for a circular food economy scheme that has been set up at primary or secondary school (Australian definitions). It is based upon the mobile app that is being used for the scheme at Yarrabilba State Secondary College, which has been released on both Android and iOS.
 
@@ -12,15 +12,15 @@ More details on the sensors and how they're used with the server can be found un
 
 ## Included source code
 
-There are extensive comments included to allow you to get a further idea of how the code functions.
+All source code files include extensive comments to allow you to get a further idea of how the code functions.
 
 #### app.js
 The entry point of the server application.
 
 #### websocket.js
-Sets up an autheticated connection to Thingsboard and creates a websocket connection to each Thingsboard sensor device defined in the database. The websocket connection will first download the latest data to add it to the database and then wait for further communication from the sensor server.
+Sets up an autheticated connection to ThingsBoard and creates a websocket connection to each ThingsBoard sensor device defined in the database. The websocket connection will first download the latest data to add it to the database and then wait for further communication from the sensor server.
 
-Functions to initalise all connections as well as close them are included, as well as an object containing all the ws objects identified by Thingsboard device ID.
+Functions to initalise all connections as well as close them are included, as well as an object containing all the ws objects identified by ThingsBoard device ID.
 
 The maximum number of connection attempts is 5 by default, and the websocket will attempt to reconnect if the initial connection failed, or it is closed through an error or another reason. Passing false in the function to close all websockets will prevent reconnection attempts.
 
@@ -47,7 +47,7 @@ Table definitions:
     - name: (varchar, required, primary key, unique) A unique name for the house.
     - score: (decimal, required, defaults to 0) The current score of the house.
 - sensor_data:
-    - sensor_id: (varchar, required, primary key, foreign key) The Thingsboard ID for the sensor. This must be one of the sensors in the sensors table.
+    - sensor_id: (varchar, required, primary key, foreign key) The ThingsBoard ID for the sensor. This must be one of the sensors in the sensors table.
     - timestamp: (datetime, required, primary key) The date and time that the current set of data was taken on.
     - mv: (decimal, required) The voltage from the methane sensor. The actual value of methane in PPM is `(mv - 2 / 5) * 1000`.
     - mvmin: (decimal, required) The minimum voltage from the methane sensor since the last reading.
@@ -59,8 +59,8 @@ Table definitions:
     - h: (decimal, required) The humidity of the air oustide of the sensor (from the same location as the external temperature probe).
     - v: (decimal) The voltage of the sensor's battery. This is unused by the mobile app and could be removed.
     - s: (decimal) The voltage from the solar panels. This is unused by the mobile app and could be removed.
-- sensors: Identifying data for the Thingsboard sensors that this server connects to.
-    - id: (varchar, required, primary key) The Thingsboard ID for the sensor. This is used to connect to it via the Thingsboard API.
+- sensors: Identifying data for the ThingsBoard sensors that this server connects to.
+    - id: (varchar, required, primary key) The ThingsBoard ID for the sensor. This is used to connect to it via the ThingsBoard API.
     - name: (varchar, required) An identifying name for the sensor.
     - description: (varchar, required, defaults to "Description not available.") A description for the sensor.
 - users: The table for the users that can log into the website. There are some legacy columns that are not used at present, and are not required to be populated - it is up to you whether to keep them or not.
@@ -104,6 +104,9 @@ Template for the login page, which allows the user to log in. By default, there 
 
 #### main_passwordForm.pug
 Template for the change password page. The server will validate whether the two new passwords are the same, or if not all fields were filled out, and display an error message if so. It will display that the password is changed if it was successful.
+
+#### main_publicInfo.pug
+Template for the public information page. It allows users that are not logged in to view the house scores and sensor readings, including a description of the different readings for the latter and why they are important.
 
 #### main_scoreForm.pug
 Template for the house scores page, where house scores can be viewed and modified. The user sets the house score directly, rather than adding to it, which allows for them to be corrected if they are too high. It will also display messages depending on whether changing the score was successful or not.
@@ -209,7 +212,7 @@ WantedBy=multi-user.target
 
 This server is designed to work with a custom designed sensor that has been developed by [Substation33](https://substation33.com.au/). This sensor is placed in a compost heap and returns readings on the humidity, temperature in the sensor and in the compost, and the current methane levels, which allows the compost conditions to be monitored.
 
-The sensor transmits data via mobile Internet to [Thingsboard](https://thingsboard.io/) at a certain interval, which consists of the following known attributes:
+The sensor transmits data via mobile Internet to [ThingsBoard](https://thingsboard.io/) at a certain interval, which consists of the following known attributes:
 - mv: The voltage from the methane sensor. The actual value of methane in PPM is `(mv - 2 / 5) * 1000`.
 - mvmin: The minimum voltage from the methane sensor since the last reading.
 - mvmax: The maximum voltage from the methane sensor since the last reading.
@@ -220,12 +223,14 @@ The sensor transmits data via mobile Internet to [Thingsboard](https://thingsboa
 - s: The voltage from the solar panels.
 There is also a timestamp associated with each data transmission from the sensor, represented as a Unix Epoch.
 
-Thingsboard provides an [API](https://thingsboard.io/docs/api/) for connecting to any devices that send data to their servers. This server communciates through the Thingsboard API, first to receive authentication credentials (a username and password belonging to an account that the sensor is associated with is required) and then to connect to a websocket associated with the sensor itself. When this server receives a message from the websocket connection, and verifies that it contains data that includes all of the above attributes, it inserts it into a new row in the database.
+ThingsBoard provides an [API](https://thingsboard.io/docs/api/) for connecting to any devices that send data to their servers. This server communciates through the ThingsBoard API, first to receive authentication credentials (a username and password belonging to an account that the sensor is associated with is required) and then to connect to a websocket associated with the sensor itself. When this server receives a message from the websocket connection, and verifies that it contains data that includes all of the above attributes, it inserts it into a new row in the database.
 
-Currently, this server does not automatically get the sensor's IDs from Thingsboard. Instead, the administrator must have it on hand (by, for example, getting it from Substation33 or whoever manufactured the sensor) or log into the Thingsboard control panel to retrieve it. They can then go to the sensors page on the server and use the form to add the sensor to the database. If the ID is valid, this server should then start storing data from the sensor.
+Currently, this server does not automatically get the sensor's IDs from ThingsBoard. Instead, the administrator must have it on hand (by, for example, getting it from Substation33 or whoever manufactured the sensor) or log into the ThingsBoard control panel to retrieve it. They can then go to the sensors page on the server and use the form to add the sensor to the database. If the ID is valid, this server should then start storing data from the sensor.
     
 ## License and copyright
 
 This code is released under the MIT Licence. You may use this code either as is or build upon it for any purpose, even for commercial use. The only condition is that a copy of the LICENCE file, which includes the declaration of copyright, is included in any copies or derivations of the source code.
 
 The copyright of this code belongs to the Queensland University of Technology, 2021.
+
+Included in this repository is version 2.8.8 of Fomantic UI, and version 3.3.1 of JQuery (a dependancy of the former). Both of these are also under the MIT license - which are included as required - and copyright belongs to the Fomantic UI community and OpenJS Foundation, respectively.
