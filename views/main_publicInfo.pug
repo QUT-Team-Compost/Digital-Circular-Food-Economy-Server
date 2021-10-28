@@ -1,0 +1,76 @@
+extends layout
+
+block content
+
+    //
+        Publicly accessible page for viewing house scores and sensor data.
+    //
+
+    h1.ui.center.aligned.header= title
+    p As part of the circular economy scheme at [insert school here], students will earn points for their houses for bringing in scraps for compost. In order to keep track of how the compost is going, there are sensors that measure the temperature, humidity and methane levels.
+
+    //
+        Lists the houses and their current scores.
+    //
+    h3 House scores
+    p The current house scores are:
+    ul
+        each row in data
+            li #{row.name} - #{row.score}
+    
+    //
+        Show the latest sensor data if there is any in the database. Otherwise,
+        show a message.
+    //
+    h3 Sensor readings
+    p Sensors will typically send new readings every thirty minutes and provide the following data:
+    ul
+        li <em>Methane levels</em> - This measures current methane levels inside the compost bin. Scraps that are being decomposed for compost will produce some methane. However, if the levels are high, this means there is a problem with the compost heap and it is going anaerobic. This is usually due to an improper mix of green and brown materials, or a lack of turning the compost heap to keep it aerated. A compost heap that is anaerobic will not decompose correctly for good compost and the methane is a potent greenhouse gas.
+        li <em>Temperature</em> - This measures both the temperature in the compost bin (at the location of the methane sensor) and the temperature around the sensor's housing. A compost heap that is decomposing correctly will get hot and so both temperatures will show the contrast between the compost heap's temperature and that of the air outside.
+        li <em>Humidity</em> - This measures the current moisture level in the compost bin. The right level of moisture is important for proper composting: too little and the decomposition will be slow, too much and the decomposition may become anaerobic.
+    if sensors
+            
+        //
+            Shows the latest data that has been saved in the database for each
+            sensor. If there is no data, shows N/A for that sensor.
+            As the methane sensor used in the Substation33 device gives a
+            voltage rather than an actual PPM reading, it needs to be converted
+            here.
+        //
+        p The latest sensor readings are:
+        table.ui.celled.small.table
+            thead
+                tr
+                    th Sensor
+                    th Latest timestamp
+                    th Methane levels
+                    th Range last half hour
+                    th Sensor temperature
+                    th External temperature
+                    th Humidity
+            tbody
+                each row in sensors
+                        tr
+                            td #{row.name}
+                            if row.timestamp
+                                td #{row.timestamp}
+                                td #{(row.mv > 2) ? ((row.mv-2)/5)*10000 : 0} ppm
+                                td #{(row.mvmin > 2) ? ((row.mvmin-2)/5)*10000 : 0} ppm - #{(row.mvmax > 2) ? ((row.mvmax-2)/5)*10000 : 0} ppm
+                                td #{row.st}°C
+                                td #{row.et}°C
+                                td #{row.h}%
+                            else
+                                td N/A
+                                td N/A
+                                td N/A
+                                td N/A
+                                td N/A
+                                td N/A
+
+    else
+        p There are currently no sensors in the database.
+    p
+        // a.ui.button(href="/") Return to home
+
+    script.
+        // Script for the public information page.

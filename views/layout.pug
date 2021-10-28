@@ -1,9 +1,26 @@
 doctype html
 html
   head
-    title= title
+    title Example Compost app website - #{title}
     link(rel='stylesheet', href='/stylesheets/style.css')
+    script(src="/javascripts/jquery-3.3.1.min.js")
+    link(rel="stylesheet" type="text/css" href="/stylesheets/fomantic_2.8.8/semantic.min.css")
+    script(src="/stylesheets/fomantic_2.8.8/semantic.min.js")
   body
-    if username
-        p Logged in as #{username}
-    block content
+    .ui.fixed.inverted.menu
+        .ui.container
+            .header.item
+                img.small.logo(src="/images/Example_logo.png", style="margin-right: 1em;")
+                | Example Compost app website
+            a.item(href="/") Home
+            a.item(href="/publicInfo") Public information
+            if loggedIn
+                a.item(href="scoreForm") House scores
+                a.item(href="sensorForm") Compost sensors
+                a.item(href="userForm") Users
+                a.item(href="passwordForm") Change your password
+                a.item(href="logout") Log out
+            else
+                a.item(href="/loginForm") Log in
+    .ui.main.text.container(style="margin-top: 7em;")
+        block content

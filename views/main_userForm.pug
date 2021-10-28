@@ -6,7 +6,7 @@ block content
         Page for viewing and managing users scores.
     //
 
-    h1= title
+    h1.ui.center.aligned.header= title
     p This is where you can manage the users that can access this server.
 
     //
@@ -18,49 +18,51 @@ block content
     //
     if users
         h3 User list:
-        table(class="sensorTable")
-            tr(class="sensorTable")
-                th(class="sensorTable") ID
-                th(class="sensorTable") Username
-                th(class="sensorTable") Active
-                th(class="sensorTable") Role
-                th(class="sensorTable") Actions
-            each row in users
-                tr(class="sensorTable")
-                        td(class="sensorTable") #{row.id}
-                        td(class="sensorTable") #{row.username}
-                        td(class="sensorTable")
-                            if (row.active === 1)
-                                | Yes
-                            else
-                                | No
-                        td(class="sensorTable")
-                            if (row.role === "admin")
-                                | Administrator
-                            else
-                                | Regular user
-                        td(class="sensorTable")
+        table.ui.celled.small.table
+            thead
+                tr
+                    th ID
+                    th Username
+                    th Active
+                    th Role
+                    th Actions
+            tbody
+                each row in users
+                    tr
+                            td #{row.id}
+                            td #{row.username}
+                            td
+                                if (row.active === 1)
+                                    | Yes
+                                else
+                                    | No
+                            td
+                                if (row.role === "admin")
+                                    | Administrator
+                                else
+                                    | Regular user
+                            td
 
-                            //
-                                At present, the current actions are to edit the
-                                user, reset their password or delete them.
-                                Editing a user switches the form below to the
-                                edit version.
-                                The latter two functions use a dedicated form
-                                so it can be sent to the right route.
-                            //
-                            table
-                                tr
-                                    td
-                                        button(value=row.id onclick="userEditButton(this)") Edit
-                                    td
-                                        form(action="/resetUserPassword" method="POST" onsubmit="return userResetPasswordButton()")
-                                            input(name="id" id="resetId" type="hidden" value=row.id)
-                                            input(value="Reset password", type="submit")
-                                    td
-                                        form(action="/deleteUser" method="POST" onsubmit="return userDeleteButton()")
-                                            input(name="id" id="deleteId" type="hidden" value=row.id)
-                                            input(value="Delete", type="submit")
+                                //
+                                    At present, the current actions are to edit the
+                                    user, reset their password or delete them.
+                                    Editing a user switches the form below to the
+                                    edit version.
+                                    The latter two functions use a dedicated form
+                                    so it can be sent to the right route.
+                                //
+                                table
+                                    tr
+                                        td
+                                            button.mini.ui.button(value=row.id onclick="userEditButton(this)") Edit
+                                        td
+                                            form(action="/resetUserPassword" method="POST" onsubmit="return userResetPasswordButton()")
+                                                input(name="id" id="resetId" type="hidden" value=row.id)
+                                                input.mini.ui.button(value="Reset password", type="submit")
+                                        td
+                                            form(action="/deleteUser" method="POST" onsubmit="return userDeleteButton()")
+                                                input(name="id" id="deleteId" type="hidden" value=row.id)
+                                                input.mini.negative.ui.button(value="Delete", type="submit")
 
     else
         p There are currently no users in the database.
@@ -69,77 +71,56 @@ block content
         Form for adding a user. This becomes hidden if the current user selects
         to edit a user instead.
     //
-    form(id="addForm", style="display: inherit", action="/addUser", method="POST")
+    form.ui.form(id="addForm", style="display: inherit", action="/addUser", method="POST")
         h3 Add a user
-        table
-            tr
-                td
-                    label Username
-                td
-                    input(name="username" id="addFormUsername")
-            tr
-                td
-                    label Password
-                td
-                    input(name="password" id="addFormPassword", type="password")
-            tr
-                td
-                    label Administrator
-                td
-                    input(name="role" id="addFormRole", type="checkbox", value="admin")
-            tr
-                td
-                    label Starts active?
-                td
-                    input(name="active" id="addFormActive", type="checkbox", value="true")
-            tr
+        .field
+            label Username
+            input(name="username" id="addFormUsername")
+        .field
+            label Password
+            input(name="password" id="addFormPassword", type="password")
+        .two.fields
+            .field
+                label Administrator
+                input(name="role" id="addFormRole", type="checkbox", value="admin")
+            .field
+                label Starts active?
+                input(name="active" id="addFormActive", type="checkbox", value="true")
 
-                //
-                    Buttons for clearing and submittting the form.
-                //
-                td
-                    button(onclick="clearAddForm()" type="button") Clear
-                    input(value="Submit", type="submit")
+        //
+            Buttons for clearing and submittting the form.
+        //
+        button.ui.secondary.button(onclick="clearAddForm()" type="button") Clear
+        input.ui.primary.button(value="Add user", type="submit")
 
     //
         Form for editing a user. This becomes hidden if the current user clicks
         to clear it, and the above form is displayed again.
     //
-    form(id="updateForm", style="display: none", action="/updateUser", method="POST")
-        h3 Modify a user
-        table
-            tr
-                td
-                    label ID
-                td
-                    input(name="id" id="updateFormId" readonly="readonly")
-            tr
-                td
-                    label Username
-                td
-                    input(name="username" id="updateFormUsername")
-            tr
-                td
-                    label Administrator
-                td
-                    input(name="role" id="updateFormRole", type="checkbox", value="admin")
-            tr
-                td
-                    label Active?
-                td
-                    input(name="active" id="updateFormActive", type="checkbox", value="true")
-            tr
+    form.ui.form(id="updateForm", style="display: none", action="/updateUser", method="POST")
+        h3 Edit a user
+        .field
+            label ID
+            input(name="id" id="updateFormId" readonly="readonly")
+        .field
+            label Username
+            input(name="username" id="updateFormUsername")
+        .two.fields
+            .field
+                label Administrator
+                input(name="role" id="updateFormRole", type="checkbox", value="admin")
+            .field
+                label Active?
+                input(name="active" id="updateFormActive", type="checkbox", value="true")
 
-                //
-                    Buttons for clearing and submittting the form.
-                //
-                td
-                    button(onclick="clearUpdateForm()" type="button") Clear
-                    input(value="Submit", type="submit")
+        //
+            Buttons for clearing and submittting the form.
+        //
+        button.ui.secondary.button(onclick="clearUpdateForm()" type="button") Clear
+        input.ui.primary.button(value="Save changes", type="submit")
 
     p
-        a(href="/") Home
-
+        // a.ui.button(href="/") Return to home
     script.
         // Script for the user page.
 

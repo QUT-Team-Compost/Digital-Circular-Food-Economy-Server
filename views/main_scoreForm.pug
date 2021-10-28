@@ -6,7 +6,7 @@ block content
         Page for viewing and managing house scores.
     //
 
-    h1= title
+    h1.ui.center.aligned.header= title
     p This is where you can adjust the scores of each house depending on how much compost their students have brought in.
 
     //
@@ -22,23 +22,17 @@ block content
         Sets the score directly rather than adding or removing a certain amount.
     //
     p Please choose which house you want to adjust the score of, and the new score:
-    form(action="/setHouseScores", method="POST")
-        table
-            tr
-                td
-                    label House
-                td
-                    select(name="house")
-                        each row in data
-                            option(value=row.id) #{row.name}
-            tr
-                td
-                    label Score
-                td
-                    input(name="score", type="number", value="0")
-            tr
-                td
-                    input(value="Submit", type="submit")
+    form.ui.form(action="/setHouseScores", method="POST")
+        .two.fields
+            .field
+                label House
+                select.ui.fluid.dropdown(name="house")
+                    each row in data
+                        option(value=row.id) #{row.name}
+            .field
+                label Score
+                input(name="score", type="number", value="0")
+        input.ui.primary.button(value="Change score", type="submit")
 
     //
         We are also considering having the server add scores based upon data
@@ -53,11 +47,13 @@ block content
         parsed scores are cleared.
     //
     form(id="csvUploadForm", action="/parseCsv", method="POST", enctype="multipart/form-data", style=(csvScores !== null ? "display: none" : "display: inherit"))
-        p Alternatively, if you have a .CSV (Comma Separated Value) file exported from the Oliver system, you can select it with the Browse button below. After selecting it, use the Submit button to upload the file to the server to parse it.
+        p Alternatively, if you have a .CSV (Comma Separated Value) file exported from the Oliver system, you can select it with the Choose file button below. After selecting it, use the Check CSV button to upload the file to the server, which will calculate how many points each house will get.
 
-        p Any entries that involve a "YSSC Compost Bin" and have been returned will have points allocated to the borrower's house. You will have a chance to preview what each house will gain from reading the file before they are saved.
-        input(name="csv", type="file")
-        input(value="Submit", type="submit")
+        p Any entries that involve a "Example Compost Bin" and have been returned will have points allocated to the borrower's house. You will be able to preview what each house will gain from reading the file before they are saved.
+        p(id="csvUploadFormFile") No file selected.
+        input(name="csv", type="file", id="csv", style="display:none;" onchange="showSelectedFile(this)")
+        label.ui.secondary.button(for="csv") Choose file
+        input.ui.primary.button(value="Check CSV", type="submit")
 
     //
         This form appears if some scores were successfully parsed from an
@@ -68,39 +64,34 @@ block content
     //
     if csvScores !== null
         div(id="csvScoresDiv")
-        p The scores parsed from the uploaded CSV file are as follows:
-        ul
-            each row, index in csvScores
-                li #{row.name} - #{row.score}
-        p Use the Submit button to change the scores in the database. Any values in the above list will be added to the existing scores.
-        P If you do not want to make these changes, use the Clear button instead.
-        form(id="csvScoresForm", action="/addToHouseScoresMultiple", method="POST")
+            p The scores parsed from the uploaded CSV file are as follows:
+            ul
+                each row, index in csvScores
+                    li #{row.name} - #{row.score}
+            p Use the Submit button to change the scores in the database. Any values in the above list will be added to the existing scores.
+            P If you do not want to make these changes, use the Clear button instead.
+            form.ui.form(id="csvScoresForm", action="/addToHouseScoresMultiple", method="POST")
 
-            //
-                This list of hidden fields will be used to send ids and the
-                corresponding scores to the database.
-            //
-            each row, index in csvScores
-                input(name=`id${index}`, id=`csvFormId${index}`, type="hidden", value=row.id)
-                input(name=`score${index}`, id=`csvFormScore${index}`, type="hidden", value=row.score)
+                //
+                    This list of hidden fields will be used to send ids and the
+                    corresponding scores to the database.
+                //
+                each row, index in csvScores
+                    input(name=`id${index}`, id=`csvFormId${index}`, type="hidden", value=row.id)
+                    input(name=`score${index}`, id=`csvFormScore${index}`, type="hidden", value=row.score)
 
-            //
-                Also have a hidden field for how many are in the list
-            //
-            input(name="numScores", id="csvFormNumScores", type="hidden", value=csvScores.length)
-            table
-                tr
-
-                    //
-                        This button will remove this form and make the original
-                        CSV form appear again.
-                    //
-                    td
-                        button(onclick="clearCsvScoresForm()", type="button") Clear
-                    td
-                        input(value="Submit", type="submit")
+                //
+                    Also have a hidden field for how many are in the list
+                //
+                input(name="numScores", id="csvFormNumScores", type="hidden", value=csvScores.length)
+                //
+                    This button will remove this form and make the original
+                    CSV form appear again.
+                //
+                button.ui.secondary.button(onclick="clearCsvScoresForm()", type="button") Clear
+                input.ui.primary.button(value="Add scores", type="submit")
     p
-        a(href="/") Home
+        // a.ui.button(href="/") Return to home
 
     script.
         // Script for the score page.
@@ -109,22 +100,33 @@ block content
         var $csvUploadForm = document.getElementById("csvUploadForm");
         var $csvScoresForm = document.getElementById("csvScoresForm");
         var $csvScoresDiv = document.getElementById("csvScoresDiv");
+        var $csvUploadFormFile = document.getElementById("csvUploadFormFile");
 
-        // If there was an error message from the user"s submission, show an
+        // If there was an error message from the user's submission, show an
         // alert.
         var submitErrorMessage = "#{submitErrorMessage}";
         if (submitErrorMessage) {
             alert(submitErrorMessage);
         }
 
-        // If there was a success message from the user"s submission, show an
+        // If there was a success message from the user's submission, show an
         // alert.
         var submitSuccessMessage = "#{submitSuccessMessage}";
         if (submitSuccessMessage) {
             alert(submitSuccessMessage);
         }
-
+        
+        // Remove the parsed CSV form if the user selects clear.
         function clearCsvScoresForm() {
             $csvScoresDiv.remove();
             $csvUploadForm.style = "display: inherit";
+        }
+
+        // Show the selected file after the user selects one.
+        function showSelectedFile(input) {
+            if (input.files.length > 0) {
+                $csvUploadFormFile.textContent = input.files[0].name + " will be uploaded.";
+            } else {
+                $csvUploadFormFile.textContent = "No file selected.";
+            }
         }

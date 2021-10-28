@@ -6,7 +6,7 @@ block content
         Page for viewing and managing compost sensors.
     //
 
-    h1= title
+    h1.ui.center.aligned.header= title
     p This is where you can view the current sensor data as well as add and edit the characteristics of sensors.
 
     //
@@ -16,35 +16,37 @@ block content
     //
     if sensors
         h3 Sensor list:
-        table(class="sensorTable")
-            tr(class="sensorTable")
-                th(class="sensorTable") Name
-                th(class="sensorTable") Description
-                th(class="sensorTable") Thingsboard ID
-                th(class="sensorTable") Actions
-            each row in sensors
-                tr(class="sensorTable")
-                        td(class="sensorTable") #{row.name}
-                        td(class="sensorTable") #{row.description}
-                        td(class="sensorTable") #{row.id}
-                        td(class="sensorTable")
+        table.ui.celled.small.table
+            thead
+                tr
+                    th Name
+                    th Description
+                    th Thingsboard ID
+                    th Actions
+            tbody
+                each row in sensors
+                    tr
+                            td #{row.name}
+                            td #{row.description}
+                            td #{row.id}
+                            td
 
-                            //
-                                At present, the current actions are to edit the
-                                sensor or delete it. Editing a sensor copies
-                                its data to the form below the lists and
-                                changes the text of the page to indicate this.
-                                Deleting a sensor uses a dedicated form so it
-                                can be sent to the right route.
-                            //
-                            table
-                                tr
-                                    td
-                                        button(value=row.id onclick='sensorEditButton(this)') Edit
-                                    td
-                                        form(action='/deleteSensor' method='POST' onsubmit="return sensorDeleteButton()")
-                                            input(name='id' id='deleteId' type='hidden' value=row.id)
-                                            input(value='Delete', type='submit')
+                                //
+                                    At present, the current actions are to edit the
+                                    sensor or delete it. Editing a sensor copies
+                                    its data to the form below the lists and
+                                    changes the text of the page to indicate this.
+                                    Deleting a sensor uses a dedicated form so it
+                                    can be sent to the right route.
+                                //
+                                table
+                                    tr
+                                        td
+                                            button.mini.ui.button(value=row.id onclick='sensorEditButton(this)') Edit
+                                        td
+                                            form(action='/deleteSensor' method='POST' onsubmit="return sensorDeleteButton()")
+                                                input(name='id' id='deleteId' type='hidden' value=row.id)
+                                                input.mini.negative.ui.button(value='Delete', type='submit')
 
         //
             Shows the latest data that has been saved in the database for each
@@ -54,64 +56,50 @@ block content
             here.
         //
         h3 Latest data for each sensor
-        table(class="sensorTable")
-            tr(class="sensorTable")
-                th(class="sensorTable") Sensor
-                th(class="sensorTable") Latest timestamp
-                th(class="sensorTable") Methane levels
-                th(class="sensorTable") Min methane levels in last 30 min
-                th(class="sensorTable") Max methane levels in last 30 min
-                th(class="sensorTable") Sensor temperature
-                th(class="sensorTable") External temperature
-                th(class="sensorTable") Humidity
-            each row in sensors
-                    tr(class="sensorTable")
-                        td(class="sensorTable") #{row.name}
-                        if row.timestamp
-                            td(class="sensorTable") #{row.timestamp}
-                            if (row.mv > 2)
-                                td(class="sensorTable") #{((row.mv-2)/5)*10000} ppm
+        table.ui.celled.small.table
+            thead
+                tr
+                    th Sensor
+                    th Latest timestamp
+                    th Methane levels
+                    th Range last half hour
+                    th Sensor temperature
+                    th External temperature
+                    th Humidity
+            tbody
+                each row in sensors
+                        tr
+                            td #{row.name}
+                            if row.timestamp
+                                td #{row.timestamp}
+                                td #{(row.mv > 2) ? ((row.mv-2)/5)*10000 : 0} ppm
+                                td #{(row.mvmin > 2) ? ((row.mvmin-2)/5)*10000 : 0} ppm - #{(row.mvmax > 2) ? ((row.mvmax-2)/5)*10000 : 0} ppm
+                                td #{row.st}°C
+                                td #{row.et}°C
+                                td #{row.h}%
                             else
-                                td(class="sensorTable") 0 ppm
-                            if (row.mvmin > 2)
-                                td(class="sensorTable") #{((row.mvmin-2)/5)*10000} ppm
-                            else
-                                td(class="sensorTable") 0 ppm
-                            if (row.mvmax > 2)
-                                td(class="sensorTable") #{((row.mvmax-2)/5)*10000} ppm
-                            else
-                                td(class="sensorTable") 0 ppm
-                            td(class="sensorTable") #{row.st}°C
-                            td(class="sensorTable") #{row.et}°C
-                            td(class="sensorTable") #{row.h}%
-                        else
-                            td(class="sensorTable") N/A
-                            td(class="sensorTable") N/A
-                            td(class="sensorTable") N/A
-                            td(class="sensorTable") N/A
-                            td(class="sensorTable") N/A
-                            td(class="sensorTable") N/A
-                            td(class="sensorTable") N/A
+                                td N/A
+                                td N/A
+                                td N/A
+                                td N/A
+                                td N/A
+                                td N/A
 
         //
             Lists whether each sensor in the database is currently connected
             to the Thingsboard websocket.
             This does not update automatically - refreshing the page will get
             the latest status.
-            There is another dedicated form here to allow the user to reset the
-            connections. This can be useful if one of the connections has
-            closed and reached the maximum number of retries.
         //
         h3 Current connection status of each sensor
         ul
             each row in sensors
-                li #{row.name}: #{row.connected}
+                if row.connected == true
+                    li #{row.name}: <Text style="color:green">Connected</Text>
+                else
+                    li #{row.name}: <Text style="color:red">Not connected</Text>
         form(action='/resetSensorConnections', method='POST')
-            table
-                tr
-                    td
-                        input(value='Reset sensor connections', type='submit')
-                    td
+            input.ui.button(value='Reset sensor connections', type='submit')
 
     else
         p There are currently no sensors in the database.
@@ -123,38 +111,28 @@ block content
         a value. This also allows the ID to be changed if it was entered
         incorrectly.
     //
-    h3(id='formTitle') Add sensor
-    form(action='/setSensor', method='POST')
+    h3(id='formTitle') Add a sensor
+    form.ui.form(action='/setSensor', method='POST')
         p(id='formSubtitle', style="display: none") -
-        table
-            tr
-                td
-                    label Thingsboard ID
-                td
-                    input(name='formId' id='formId')
-                    input(name='formOriginalId' id='formOriginalId' type='hidden')
-            tr
-                td
-                    label Name
-                td
-                    input(name='formName' id='formName')
-            tr
-                td
-                    label Description (optional)
-                td
-                    input(name='formDescription' id='formDescription')
-            tr
+        .field
+            label Thingsboard ID
+            input(name='formId' id='formId')
+            input(name='formOriginalId' id='formOriginalId' type='hidden')
+        .field
+            label Name
+            input(name='formName' id='formName')
+        .field
+            label Description (optional)
+            input(name='formDescription' id='formDescription')
 
-                //
-                    Buttons for clearing and submittting the form.
-                //
-                td
-                    button(onclick='clearAddUpdateForm()' type='button') Clear
-                    input(value='Submit', type='submit')
+            //
+                Buttons for clearing and submittting the form.
+            //
+        button.ui.secondary.button(onclick='clearAddUpdateForm()' type='button') Clear
+        input.ui.primary.button(id="formSubmit", value='Add sensor', type='submit')
 
     p
-        a(href="/") Home
-
+        // a.ui.button(href="/") Return to home
     script.
         // Script for the sensor page.
 
@@ -169,6 +147,7 @@ block content
         var $formId = document.getElementById('formId');
         var $formName = document.getElementById('formName');
         var $formDescription = document.getElementById('formDescription');
+        var $formSubmit = document.getElementById('formSubmit');
 
         // Sets up the form for editing the sensor specified by the ID
         // parameter.
@@ -184,9 +163,10 @@ block content
             }
 
             // Change the title and show the subtitle.
-            $formTitle.textContent = "Edit sensor";
+            $formTitle.textContent = "Edit a sensor";
             $formSubtitle.style = "display: inherit";
             $formSubtitle.textContent = `Editing sensor ${id}`;
+            $formSubmit.value = "Save changes";
         }
 
         // When the user clicks on the clear form button, clear all form
@@ -199,9 +179,10 @@ block content
             $formDescription.value = "";
 
             // Change the title and hide the subtitle.
-            $formTitle.textContent = "Add sensor";
+            $formTitle.textContent = "Add a sensor";
             $formSubtitle.style = "display: none";
             $formSubtitle.textContent = "-";
+            $formSubmit.value = "Add sensor";
         }
 
         // When the user clicks on the button to edit a sensor, set up the form

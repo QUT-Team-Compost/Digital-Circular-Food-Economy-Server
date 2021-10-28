@@ -274,6 +274,18 @@ function clearMessages(req) {
     */
 router.post("/login", db, function(req, res, next) {
     dprint("(main.js - route /login) Attempting to log in a user.");
+    
+    // If the user is already logged in, send them back to the home page.
+    if (req.session.username !== undefined) {
+        var message = "You are already logged in.";
+        if (req.is('application/json')) {
+            sendError(res, message, 200);
+        } else {
+            req.session.loginErrorMessage = message;
+            res.redirect('/');
+        }
+        return;
+    }
 
     // Get the username and password.
     var username = req.body.username
@@ -606,7 +618,7 @@ router.get("/", function(req, res, next) {
     clearMessages(req);
 
     // Render the home page template.
-    res.render("main_home", {title:"Example Compost app backend - Home", loggedIn:req.session.username !== undefined, loginErrorMessage:loginErrorMessage});
+    res.render("main_home", {title:"Home", loggedIn:req.session.username !== undefined, loginErrorMessage:loginErrorMessage});
 })
 
 /** Web page for adjusting the scores of a particular house.
@@ -628,7 +640,7 @@ router.get("/scoreForm", db, authorize, function(req, res, next) {
         .then((result) => {
 
             // Render the score form template.
-            res.render("main_scoreForm", {title:"Example Compost app backend - House scores", data:result, submitSuccessMessage:submitSuccessMessage, submitErrorMessage:submitErrorMessage, csvScores:csvScores});
+            res.render("main_scoreForm", {title:"House scores", loggedIn:true, data:result, submitSuccessMessage:submitSuccessMessage, submitErrorMessage:submitErrorMessage, csvScores:csvScores});
         })
 
         // If there's an error during the database call, send it to the client.
@@ -641,6 +653,14 @@ router.get("/scoreForm", db, authorize, function(req, res, next) {
     Will show an error message if the log in attempt was unsuccessful. */
 router.get("/loginForm", function(req, res, next) {
     dprint("(main.js - route /loginForm) Loading login page.");
+    
+    // If the user is already logged in, send them back to the home page.
+    if (req.session.username !== undefined) {
+        var message = "You are already logged in.";
+        req.session.loginErrorMessage = message;
+        res.redirect('/');
+        return;
+    }
 
     // See if we have any message in the session.
     var submitErrorMessage = req.session.submitErrorMessage;
@@ -649,7 +669,7 @@ router.get("/loginForm", function(req, res, next) {
     clearMessages(req);
 
     // Render the login form template.
-    res.render("main_loginForm", {title:"Example Compost app backend - Login", submitErrorMessage:submitErrorMessage});
+    res.render("main_loginForm", {title:"Log in", loggedIn:false, submitErrorMessage:submitErrorMessage});
 })
 
 /** Web page for changing the password of the currently logged in user.
@@ -666,7 +686,7 @@ router.get("/passwordForm", db, authorize, function(req, res, next) {
     clearMessages(req);
 
     // Render the password form template.
-    res.render("main_passwordForm", {title:"Example Compost app backend - Change password", submitSuccessMessage:submitSuccessMessage, submitErrorMessage:submitErrorMessage});
+    res.render("main_passwordForm", {title:"Change password", loggedIn:true, submitSuccessMessage:submitSuccessMessage, submitErrorMessage:submitErrorMessage});
 })
 
 /** Changes the password of an existing user.
@@ -828,13 +848,13 @@ router.get("/sensorForm", db, authorize, adminOnly, function(req, res, next) {
                 }
 
                 // Render the sensor form template with the sensor data.
-                res.render("main_sensorForm", {title:"Example Compost app backend - Compost sensors", sensors:sensors, submitSuccessMessage:submitSuccessMessage, submitErrorMessage:submitErrorMessage, resetSuccessMessage:resetSuccessMessage, resetErrorMessage:resetErrorMessage});
+                res.render("main_sensorForm", {title:"Compost sensors", loggedIn:true, sensors:sensors, submitSuccessMessage:submitSuccessMessage, submitErrorMessage:submitErrorMessage, resetSuccessMessage:resetSuccessMessage, resetErrorMessage:resetErrorMessage});
 
             // Otherwise...
             } else {
 
                 // Render the sensor form template.
-                res.render("main_sensorForm", {title:"Example Compost app backend - Compost sensors", submitSuccessMessage:submitSuccessMessage, submitErrorMessage:submitErrorMessage, resetSuccessMessage:resetSuccessMessage, resetErrorMessage:resetErrorMessage});
+                res.render("main_sensorForm", {title:"Compost sensors", loggedIn:true, submitSuccessMessage:submitSuccessMessage, submitErrorMessage:submitErrorMessage, resetSuccessMessage:resetSuccessMessage, resetErrorMessage:resetErrorMessage});
             }
         })
 
@@ -1103,7 +1123,7 @@ router.get("/userForm", db, authorize, adminOnly, function(req, res, next) {
             if (users.length > 0) {
 
                 // Render the sensor form template with the user data.
-                res.render("main_userForm", {title:"Example Compost app backend - Users", users:users, submitSuccessMessage:submitSuccessMessage, submitErrorMessage:submitErrorMessage});
+                res.render("main_userForm", {title:"Users", loggedIn:true, users:users, submitSuccessMessage:submitSuccessMessage, submitErrorMessage:submitErrorMessage});
 
             // Otherwise...
             // (This situation should never happen but exists for
@@ -1111,7 +1131,7 @@ router.get("/userForm", db, authorize, adminOnly, function(req, res, next) {
             } else {
 
                 // Render the sensor form template.
-                res.render("main_userForm", {title:"Example Compost app backend - Users", submitSuccessMessage:submitSuccessMessage, submitErrorMessage:submitErrorMessage});
+                res.render("main_userForm", {title:"Users", loggedIn:true, submitSuccessMessage:submitSuccessMessage, submitErrorMessage:submitErrorMessage});
             }
         })
 
@@ -1530,6 +1550,45 @@ router.post("/resetUserPassword", db, authorize, adminOnly, function(req, res, n
             req.session.submitErrorMessage = message;
             res.redirect('userForm');
         });
+});
+
+/** Shows both the house scores and sensor data to all users.
+    Accessible to users that are not logged in as well.
+    */
+router.get("/publicInfo", db, function(req, res, next) {
+    dprint("(main.js - route /publicInfo) Loading public info page.");
+
+    // Get the house information from the database.
+    req.db.from("houses").orderBy("id", "asc")
+        .then((result) => {
+            
+            req.db.from("sensor_data_latest")
+                .then((sensors) => {
+
+                    // If there is at least one sensor...
+                    if (sensors.length > 0) {
+
+                        // Render the sensor form template with the sensor data.
+                        res.render("main_publicInfo", {title:"Public information", loggedIn:req.session.username !== undefined, data:result, sensors:sensors});
+
+                    // Otherwise...
+                    } else {
+
+                        // Render the sensor form template.
+                        res.render("main_publicInfo", {title:"Public information", loggedIn:req.session.username !== undefined, data:result});
+                    }
+                })
+
+                // If there's an error during the database call, send it to the client.
+                .catch((err) => {
+                    res.send("An error occured while trying to access the database:" + err.message)
+                })
+        })
+
+        // If there's an error during the database call, send it to the client.
+        .catch((err) => {
+            res.send("An error occured while trying to access the database:" + err.message)
+        })
 });
 
 // ------ Routes for mobile only ------

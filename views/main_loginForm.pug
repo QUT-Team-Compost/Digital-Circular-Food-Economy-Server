@@ -6,28 +6,21 @@ block content
         Page for logging into the mobile app server to manage it.
     //
 
-    h1= title
+    h1.ui.center.aligned.header= title
 
     //
         Form that lets the user log in.
     //
-    form(action='/login', method='POST')
-        table
-            tr
-                td
-                    label Username
-                td
-                    input(name='username', type='text')
-            tr
-                td
-                    label Password
-                td
-                    input(name='password', type='password')
-            tr
-                td
-                    input(value='Submit', type='submit')
+    form.ui.form(action='/login', method='POST')
+        .field
+            label Username
+            input(name='username', type='text')
+        .field
+            label Password
+            input(name='password', type='password')
+        input.ui.primary.button(value='Log in', type='submit')
     p
-        a(href="/") Home
+        // a.ui.button(href="/") Return to home
 
     script.
         // Script for the login page.

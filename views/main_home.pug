@@ -6,10 +6,16 @@ block content
         Landing page for the mobile app server. Shows a log in link if the user is
         not logged in, otherwise gives a list of links to the various page options.
     //
-
-    h1= title
-    p These web pages will allow you to control some of the aspects of the mobile app companion for the compost and circular economy project at [insert your school here] - Example Compost app.
+    img.ui.centered.medium.image(src="/images/Example_logo.png")
+    h1.ui.center.aligned.header Example Compost app website
+    p Welcome to the server backend for the compost and circular economy project at [insert school here].
+    p If you are a public visitor, a staff member without a user account or a student, you can view some of the information and data relating to the scheme here.
+    p If you are an administrator or a staff member with a user account, logging in will allow you to manage the data behind the mobile app companion for the circular economy scheme.
+    h3 Menu
     if loggedIn
+        p
+            a(href="publicInfo") Public information
+            |  - Visitors who are not logged in are still able to view house scores and the latest sensor readings. The current view can be checked here.
         p
             a(href="scoreForm") House scores
             |  - Where the current scores for each house can be viewed and updated.
@@ -26,6 +32,9 @@ block content
             a(href="logout") Log out
             |  - Logs you out of the server.
     else
+        p
+            a(href="publicInfo") Public information
+            |  - View the current house scores and sensor readings here.
         p
             a(href="loginForm") Log in
             |  - Logs you into the server and allows you to access staff and administration functions.
