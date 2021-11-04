@@ -13,10 +13,10 @@ block content
     //
     form.ui.form(action='/login', method='POST')
         .field
-            label Username
+            label Username <i class="question circle icon"></i><div class="ui popup">Your current username. If you have forgotten it, or do not yet have an account, please contact an administrator.</div>
             input(name='username', type='text')
         .field
-            label Password
+            label Password <i class="question circle icon"></i><div class="ui popup">Your current password. If you have forgotten it, please contact an administrator to reset it for you.</div>
             input(name='password', type='password')
         input.ui.primary.button(value='Log in', type='submit')
     p

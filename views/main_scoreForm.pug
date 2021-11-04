@@ -15,7 +15,7 @@ block content
     p The current house scores are:
     ul
         each row in data
-            li #{row.name} - #{row.score}
+            li #{row.name}: #{row.score}
 
     //
         Form for changing the scores of a house.
@@ -25,12 +25,12 @@ block content
     form.ui.form(action="/setHouseScores", method="POST")
         .two.fields
             .field
-                label House
+                label House <i class="question circle icon"></i><div class="ui popup">The house to set the new score for.</div>
                 select.ui.fluid.dropdown(name="house")
                     each row in data
                         option(value=row.id) #{row.name}
             .field
-                label Score
+                label Score <i class="question circle icon"></i><div class="ui popup">The score that the house will be set to. Note that this sets the total - it does not add or subtract from the existing score.</div>
                 input(name="score", type="number", value="0")
         input.ui.primary.button(value="Change score", type="submit")
 
@@ -69,7 +69,7 @@ block content
                 each row, index in csvScores
                     li #{row.name} - #{row.score}
             p Use the Submit button to change the scores in the database. Any values in the above list will be added to the existing scores.
-            P If you do not want to make these changes, use the Clear button instead.
+            P If you do not want to make these changes, use the Clear button to clear these scores without any changes.
             form.ui.form(id="csvScoresForm", action="/addToHouseScoresMultiple", method="POST")
 
                 //

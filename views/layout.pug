@@ -1,26 +1,52 @@
 doctype html
 html
-  head
-    title Example Compost app website - #{title}
-    link(rel='stylesheet', href='/stylesheets/style.css')
-    script(src="/javascripts/jquery-3.3.1.min.js")
-    link(rel="stylesheet" type="text/css" href="/stylesheets/fomantic_2.8.8/semantic.min.css")
-    script(src="/stylesheets/fomantic_2.8.8/semantic.min.js")
-  body
-    .ui.fixed.inverted.menu
-        .ui.container
-            .header.item
-                img.small.logo(src="/images/Example_logo.png", style="margin-right: 1em;")
-                | Example Compost app website
-            a.item(href="/") Home
-            a.item(href="/publicInfo") Public information
-            if loggedIn
-                a.item(href="scoreForm") House scores
-                a.item(href="sensorForm") Compost sensors
-                a.item(href="userForm") Users
-                a.item(href="passwordForm") Change your password
-                a.item(href="logout") Log out
-            else
-                a.item(href="/loginForm") Log in
-    .ui.main.text.container(style="margin-top: 7em;")
-        block content
+    head
+        title YSSC Compost app website - #{title}
+        link(rel='stylesheet', href='/stylesheets/style.css')
+        script(src="/javascripts/jquery-3.3.1.min.js")
+        link(rel="stylesheet" type="text/css" href="/stylesheets/fomantic_2.8.8/semantic.min.css")
+        script(src="/stylesheets/fomantic_2.8.8/semantic.min.js")
+    body
+        //
+            Menu bar that displays the title of the website as well as menu
+            items for each of the different pages on the site. The latter comes
+            with Fomantic popups to show what each of the pages are (without
+            having to go back to the home page).
+        //
+        .ui.fixed.blue.inverted.menu
+            .ui.container
+                .header.item
+                    img.small.logo(src="/images/Example_logo.png", style="margin-right: 1em;")
+                    | Example Compost app website
+                a.item(href="/") Home
+                | <div class="ui popup">Returns you to the home page of this website.</div>
+                if loggedIn
+                    a.item(href="/publicInfo") Public information
+                    | <div class="ui popup">Visitors who are not logged in are still able to view house scores and the latest sensor readings. The current view can be checked here.</div>
+                    a.item(href="scoreForm") House scores
+                    | <div class="ui popup">Allows you to view and update the current scores for each house.</div>
+                    a.item(href="sensorForm") Compost sensors
+                    | <div class="ui popup">(Administrator only) Allows you view the status and latest readings of compost sensors. Sensor entries can also be added, modified or removed here.</div>
+                    a.item(href="userForm") Users
+                    | <div class="ui popup">(Administrator only) Allows you to view all user accounts. Users can also be added, modified or removed here.</div>
+                    a.item(href="passwordForm") Change password
+                    | <div class="ui popup">Allows you to change your password.</div>
+                    a.item(href="logout") Log out
+                    | <div class="ui popup">Logs you out of the website.</div>
+                else
+                    a.item(href="/publicInfo") Public information
+                    | <div class="ui popup">Allows you to view the current house scores and sensor readings.</div>
+                    a.item(href="/loginForm") Log in
+                    | <div class="ui popup">Logs you into the server and allows you to access staff and administration functions.</div>
+        .ui.main.text.container(style="margin-top: 7em;")
+            block content
+    script.
+        // Initialises the popups for the question icons and menu bar items.
+        $('.question')
+            .popup({
+                inline: true
+            });
+        $('a.item')
+            .popup({
+                inline: true
+            });

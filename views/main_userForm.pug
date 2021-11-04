@@ -74,17 +74,17 @@ block content
     form.ui.form(id="addForm", style="display: inherit", action="/addUser", method="POST")
         h3 Add a user
         .field
-            label Username
+            label Username <i class="question circle icon"></i><div class="ui popup">The new user's username, which they use to log in. This must be unique.</div>
             input(name="username" id="addFormUsername")
         .field
-            label Password
+            label Password <i class="question circle icon"></i><div class="ui popup">The new user's password.</div>
             input(name="password" id="addFormPassword", type="password")
         .two.fields
             .field
-                label Administrator
+                label Administrator <i class="question circle icon"></i><div class="ui popup">Whether the new user is an administrator.</div>
                 input(name="role" id="addFormRole", type="checkbox", value="admin")
             .field
-                label Starts active?
+                label Active <i class="question circle icon"></i><div class="ui popup">Whether the new user's account is active. While inactive, the user will not be able to log in.</div>
                 input(name="active" id="addFormActive", type="checkbox", value="true")
 
         //
@@ -100,17 +100,17 @@ block content
     form.ui.form(id="updateForm", style="display: none", action="/updateUser", method="POST")
         h3 Edit a user
         .field
-            label ID
+            label ID <i class="question circle icon"></i><div class="ui popup">The user's ID number. This is assigned automatically and cannot be edited.</div>
             input(name="id" id="updateFormId" readonly="readonly")
         .field
-            label Username
+            label Username <i class="question circle icon"></i><div class="ui popup">The user's username, which they use to log in. This must be unique.</div>
             input(name="username" id="updateFormUsername")
         .two.fields
             .field
-                label Administrator
+                label Administrator <i class="question circle icon"></i><div class="ui popup">Whether the user is an administrator. There must be at least one administrator user; You will be unable to remove the administrator status if this is the last administrator user.</div>
                 input(name="role" id="updateFormRole", type="checkbox", value="admin")
             .field
-                label Active?
+                label Active <i class="question circle icon"></i><div class="ui popup">Whether the user's account is active. While inactive, the user will not be able to log in. You cannot deactivate the last administrator user.</div>
                 input(name="active" id="updateFormActive", type="checkbox", value="true")
 
         //

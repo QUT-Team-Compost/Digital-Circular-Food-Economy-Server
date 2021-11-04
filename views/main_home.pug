@@ -18,26 +18,27 @@ block content
             |  - Visitors who are not logged in are still able to view house scores and the latest sensor readings. The current view can be checked here.
         p
             a(href="scoreForm") House scores
-            |  - Where the current scores for each house can be viewed and updated.
+            |  - Allows you to view and update the current scores for each house.
         p
             a(href="sensorForm") Compost sensors
-            |  - (Administrator only) Where the status and latest data of all sensors can be viewed. Sensor entries can be added, modified or removed here, as well as resetting connections to ThingsBoard.
+            |  - (Administrator only) Allows you view the status and latest readings of compost sensors. Sensor entries can also be added, modified or removed here.
         p
             a(href="userForm") Users
-            |  - (Administrator only) Where all user accounts can be viewed. Users can be added, modified or removed here.
+            |  - (Administrator only) Allows you to view all user accounts. Users can also be added, modified or removed here.
         p
-            a(href="passwordForm") Change your password
+            a(href="passwordForm") Change password
             |  - Allows you to change your password.
         p
             a(href="logout") Log out
-            |  - Logs you out of the server.
+            |  - Logs you out of the website.
     else
         p
             a(href="publicInfo") Public information
-            |  - View the current house scores and sensor readings here.
+            |  - Allows you to view the current house scores and sensor readings.
         p
             a(href="loginForm") Log in
             |  - Logs you into the server and allows you to access staff and administration functions.
+    p Some parts of this website, such as form fields will have a <i class="question circle icon"></i>icon. Hovering over it with the mouse will provide additional information.
     //
         If there are any issues with the user's authentication, show them here.
     //

@@ -99,7 +99,9 @@ block content
                 else
                     li #{row.name}: <Text style="color:red">Not connected</Text>
         form(action='/resetSensorConnections', method='POST')
-            input.ui.button(value='Reset sensor connections', type='submit')
+            input.ui.secondary.button(value='Reset sensor connections', type='submit')
+            i.large.question.circle.icon(data-position="right center")
+            .ui.popup Disconnects any existing sensor connections to ThingsBoard and then attempts to reconnect all sensors. This is primarily intended to reconnect a sensor that has disconnected by itself for some reason.
 
     else
         p There are currently no sensors in the database.
@@ -115,14 +117,14 @@ block content
     form.ui.form(action='/setSensor', method='POST')
         p(id='formSubtitle', style="display: none") -
         .field
-            label Thingsboard ID
+            label Thingsboard ID <i class="question circle icon"></i><div class="ui popup">The ID given to the sensor on ThingsBoard. You will either need to log in to ThingsBoard yourself to get the ID, or contact those that built the sensor for you.</div>
             input(name='formId' id='formId')
             input(name='formOriginalId' id='formOriginalId' type='hidden')
         .field
-            label Name
+            label Name <i class="question circle icon"></i><div class="ui popup">The name of the sensor. Typically this will also be supplied by ThingsBoard, but it does not need to be.</div>
             input(name='formName' id='formName')
         .field
-            label Description (optional)
+            label Description (optional) <i class="question circle icon"></i><div class="ui popup">A longer description for the sensor, to better describe what it is for, where it is, etc. This is optional and can be left blank.</div>
             input(name='formDescription' id='formDescription')
 
             //
